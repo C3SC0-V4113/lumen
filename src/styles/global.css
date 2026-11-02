@@ -266,6 +266,32 @@
   font-variant-numeric: tabular-nums;
 }
 
-@utility ease-theme-swap {
+@utility theme-icon {
+  transition-property: opacity, transform, filter;
+  transition-duration: 300ms;
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@utility theme-icon-hidden {
+  transform: scale(0.25);
+  opacity: 0;
+  filter: blur(4px);
+}
+
+@utility theme-icon-visible {
+  transform: scale(1);
+  opacity: 1;
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-icon {
+    transition-duration: 100ms;
+  }
+
+  .theme-icon-hidden,
+  .theme-icon-visible {
+    transform: none;
+    filter: none;
+  }
 }
