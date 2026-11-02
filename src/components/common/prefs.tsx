@@ -14,11 +14,10 @@ import { getLocalizedPath, t, type Locale } from '@/i18n';
 
 interface Props {
   lang: Locale;
-  path: string;
   surface: 'site' | 'cms';
 }
 
-export default function Prefs({ lang, path, surface }: Props) {
+export default function Prefs({ lang, surface }: Props) {
   const isDark = useSyncExternalStore(
     (notify) => {
       const observer = new MutationObserver(notify);
@@ -41,7 +40,8 @@ export default function Prefs({ lang, path, surface }: Props) {
 
   function changeLocale(next: string | null) {
     if (next !== 'en' && next !== 'es') return;
-    window.location.assign(getLocalizedPath(path, next));
+    const pathname = getLocalizedPath(window.location.pathname, next);
+    window.location.assign(`${pathname}${window.location.search}${window.location.hash}`);
   }
 
   return (
@@ -66,15 +66,19 @@ export default function Prefs({ lang, path, surface }: Props) {
           <Sun
             aria-hidden="true"
             className={cn(
-              'absolute size-5 theme-icon',
-              isDark ? 'theme-icon-hidden' : 'theme-icon-visible'
+              'absolute size-5 transition duration-300 ease-in-out motion-reduce:transform-none motion-reduce:filter-none motion-reduce:duration-100',
+              isDark
+                ? 'scale-25 opacity-0 blur-sm motion-reduce:scale-100 motion-reduce:blur-none'
+                : 'scale-100 opacity-100 blur-none'
             )}
           />
           <Moon
             aria-hidden="true"
             className={cn(
-              'absolute size-5 theme-icon',
-              isDark ? 'theme-icon-visible' : 'theme-icon-hidden'
+              'absolute size-5 transition duration-300 ease-in-out motion-reduce:transform-none motion-reduce:filter-none motion-reduce:duration-100',
+              isDark
+                ? 'scale-100 opacity-100 blur-none'
+                : 'scale-25 opacity-0 blur-sm motion-reduce:scale-100 motion-reduce:blur-none'
             )}
           />
         </span>

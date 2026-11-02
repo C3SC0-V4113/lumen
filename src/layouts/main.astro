@@ -45,7 +45,7 @@ const { surface = 'site', lang = 'en', title = 'Lumen' } = Astro.props;
     </a>
     <header class="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
       <slot name="brand" />
-      <Prefs client:load lang={lang} path={Astro.url.pathname} surface={surface} />
+      <Prefs client:load lang={lang} surface={surface} />
     </header>
     <main id="main-content" tabindex="-1">
       <slot />

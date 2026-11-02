@@ -9,19 +9,15 @@ export function t(locale: Locale, key: TranslationKey): string {
   return dictionaries[locale][key];
 }
 
-export function getLocaleFromUrl(url: URL | string): Locale {
-  const pathname =
-    typeof url === 'string' ? (url.includes('://') ? new URL(url).pathname : url) : url.pathname;
-  return pathname === '/es' || pathname.startsWith('/es/') ? 'es' : 'en';
+export function getLocaleFromUrl(path: URL | string): Locale {
+  const url = new URL(path.toString(), 'https://lumen.invalid');
+  return url.pathname === '/es' || url.pathname.startsWith('/es/') ? 'es' : 'en';
 }
 
 export function getLocalizedPath(pathname: string, locale: Locale): string {
-  const withoutLocale = pathname.replace(/^\/es(?=\/|$)/, '') || '/';
+  const normalizedPath = `/${pathname.replace(/^\/+/, '')}`;
+  const parsedPath = new URL(normalizedPath, 'https://lumen.invalid').pathname;
+  const withoutLocale = parsedPath.replace(/^\/es(?=\/|$)/, '') || '/';
   if (locale === 'en') return withoutLocale;
   return withoutLocale === '/' ? '/es' : `/es${withoutLocale}`;
-}
-
-export function getEquivalentPath(pathname: string): string {
-  const locale = getLocaleFromUrl(pathname);
-  return getLocalizedPath(pathname, locale === 'en' ? 'es' : 'en');
 }
