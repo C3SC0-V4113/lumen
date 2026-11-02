@@ -12,6 +12,8 @@ This file is the source of truth for the shared public site and CMS interface.
   `light` or `dark`.
 - Use semantic colors (`background`, `foreground`, `muted`, `primary`, `success`, `warning`,
   `info`, and `destructive`) instead of raw palette colors.
+- All colors live in `src/styles/global.css` as `oklch()` tokens. Add new colors there in OKLCH;
+  do not introduce hex, RGB, or HSL color values.
 - The contrast suite checks selected text pairs against WCAG AA (4.5:1) and input boundaries against
   the 3:1 non-text threshold across each surface palette. It does not claim coverage of every possible
   token combination.
