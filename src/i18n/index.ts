@@ -18,6 +18,7 @@ export function getLocalizedPath(pathname: string, locale: Locale): string {
   const normalizedPath = `/${pathname.replace(/^\/+/, '')}`;
   const parsedPath = new URL(normalizedPath, 'https://lumen.invalid').pathname;
   const withoutLocale = parsedPath.replace(/^\/es(?=\/|$)/, '') || '/';
-  if (locale === 'en') return withoutLocale;
-  return withoutLocale === '/' ? '/es' : `/es${withoutLocale}`;
+  const normalizedRoute = withoutLocale.replace(/\/+/g, '/') || '/';
+  if (locale === 'en') return normalizedRoute;
+  return normalizedRoute === '/' ? '/es' : `/es${normalizedRoute}`;
 }

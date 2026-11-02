@@ -27,5 +27,9 @@ describe('localization', () => {
     expect(getLocalizedPath('/es', 'en')).toBe('/');
     expect(getLocalizedPath('//evil.com', 'en')).toBe('/evil.com');
     expect(getLocalizedPath('//evil.com', 'es')).toBe('/es/evil.com');
+    expect(getLocalizedPath('/es//evil.com', 'en')).toBe('/evil.com');
+    expect(getLocalizedPath('/es//evil.com', 'es')).toBe('/es/evil.com');
+    expect(getLocalizedPath('/a//b', 'en')).toBe('/a/b');
+    expect(getLocalizedPath('/a//b', 'es')).toBe('/es/a/b');
   });
 });
