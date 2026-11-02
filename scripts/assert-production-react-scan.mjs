@@ -13,8 +13,12 @@ async function filesIn(directory) {
 }
 
 const files = await filesIn('dist');
+const executableFiles = files.filter((file) => !file.endsWith('.map'));
 const leakedScript = await Promise.all(
-  files.map(async (file) => ({ file, content: await readFile(file, 'utf8').catch(() => '') }))
+  executableFiles.map(async (file) => ({
+    file,
+    content: await readFile(file, 'utf8').catch(() => ''),
+  }))
 ).then((contents) => contents.find(({ content }) => content.includes('react-scan@0.5.7')));
 
 if (!files.length) throw new Error('The production build did not emit files in dist/.');
