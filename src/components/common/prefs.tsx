@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getLocalizedPath, type Locale } from '@/i18n';
+import { getLocalizedPath, t, type Locale } from '@/i18n';
 
 interface Props {
   lang: Locale;
@@ -45,9 +45,9 @@ export default function Prefs({ lang, path, surface }: Props) {
   }
 
   return (
-    <nav aria-label="Preferences" className="flex items-center gap-2">
+    <div role="group" aria-label={t(lang, 'preferences.group')} className="flex items-center gap-2">
       <Select value={lang} onValueChange={changeLocale}>
-        <SelectTrigger aria-label={lang === 'es' ? 'Idioma' : 'Language'} size="touch">
+        <SelectTrigger aria-label={t(lang, 'preferences.language')} size="touch">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -56,7 +56,7 @@ export default function Prefs({ lang, path, surface }: Props) {
         </SelectContent>
       </Select>
       <Button
-        aria-label={lang === 'es' ? 'Cambiar tema de color' : 'Toggle color theme'}
+        aria-label={t(lang, 'preferences.theme')}
         aria-pressed={isDark}
         onClick={toggleTheme}
         size="touch"
@@ -79,6 +79,6 @@ export default function Prefs({ lang, path, surface }: Props) {
           />
         </span>
       </Button>
-    </nav>
+    </div>
   );
 }

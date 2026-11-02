@@ -6,7 +6,8 @@ const es: Record<keyof typeof en, string> = {
   'home.title': 'Historias para mentes curiosas.',
   'home.description': 'Lumen crea juegos con intención y un poco de luz.',
   'preferences.language': 'Idioma',
-  'preferences.theme': 'Cambiar tema de color',
+  'preferences.group': 'Preferencias',
+  'preferences.theme': 'Tema oscuro',
 };
 
 export default es;

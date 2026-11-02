@@ -26,7 +26,7 @@ test('renders both localized home pages and persists the theme', async ({ page }
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Stories for curious minds.');
   await expect(page.locator('html')).toHaveClass(/dark/);
 
-  const themeToggle = page.getByRole('button', { name: 'Toggle color theme' });
+  const themeToggle = page.getByRole('button', { name: 'Dark theme', pressed: true });
   await themeToggle.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('html')).not.toHaveClass(/dark/);
