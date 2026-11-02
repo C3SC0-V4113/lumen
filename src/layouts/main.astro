@@ -1,11 +1,38 @@
 ---
 import '../styles/global.css';
+
+import Prefs from '../components/common/prefs';
+
+interface Props {
+  surface?: 'site' | 'cms';
+  lang?: 'en' | 'es';
+  title?: string;
+}
+
+const { surface = 'site', lang = 'en', title = 'Lumen' } = Astro.props;
 ---
 
-<html lang="en">
+<html lang={lang} data-surface={surface}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    <script is:inline>
+      (() => {
+        const surface = document.documentElement.dataset.surface;
+        const fallback = surface === 'site' ? 'dark' : 'light';
+        const key = `lumen:${surface}:theme`;
+        try {
+          const stored = localStorage.getItem(key);
+          document.documentElement.classList.toggle(
+            'dark',
+            stored === 'dark' || (stored !== 'light' && fallback === 'dark')
+          );
+        } catch {
+          document.documentElement.classList.toggle('dark', fallback === 'dark');
+        }
+      })();
+    </script>
     {import.meta.env.DEV && (
       <script
         is:inline
@@ -16,6 +43,10 @@ import '../styles/global.css';
     <slot name="head" />
   </head>
   <body>
-    <slot />
+    <header class="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
+      <slot name="brand" />
+      <Prefs client:load lang={lang} path={Astro.url.pathname} surface={surface} />
+    </header>
+    <main><slot /></main>
   </body>
 </html>

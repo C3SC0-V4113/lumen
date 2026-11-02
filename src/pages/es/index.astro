@@ -1,0 +1,16 @@
+---
+import Logo from '../../components/common/logo.astro';
+import { t } from '../../i18n';
+import Layout from '../../layouts/main.astro';
+---
+
+<Layout lang="es" surface="site" title="Lumen — Estudio independiente">
+  <Logo slot="brand" label="Lumen" />
+  <section class="mx-auto flex min-h-[65vh] max-w-6xl flex-col justify-center px-6 py-20">
+    <p class="mb-4 text-sm font-medium tracking-wide text-primary">{t('es', 'home.eyebrow')}</p>
+    <h1 class="max-w-3xl text-5xl leading-tight md:text-7xl">{t('es', 'home.title')}</h1>
+    <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+      {t('es', 'home.description')}
+    </p>
+  </section>
+</Layout>
