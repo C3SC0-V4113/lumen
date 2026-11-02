@@ -2,6 +2,7 @@
 import '../styles/global.css';
 
 import Prefs from '../components/common/prefs';
+import { t } from '../i18n';
 
 interface Props {
   surface?: 'site' | 'cms';
@@ -33,20 +34,21 @@ const { surface = 'site', lang = 'en', title = 'Lumen' } = Astro.props;
         }
       })();
     </script>
-    {import.meta.env.DEV && (
-      <script
-        is:inline
-        crossorigin="anonymous"
-        src="//unpkg.com/react-scan@0.5.7/dist/auto.global.js"
-      ></script>
-    )}
     <slot name="head" />
   </head>
   <body>
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-10"
+    >
+      {t(lang, 'common.skipToContent')}
+    </a>
     <header class="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
       <slot name="brand" />
       <Prefs client:load lang={lang} path={Astro.url.pathname} surface={surface} />
     </header>
-    <main><slot /></main>
+    <main id="main-content" tabindex="-1">
+      <slot />
+    </main>
   </body>
 </html>

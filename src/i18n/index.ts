@@ -10,7 +10,8 @@ export function t(locale: Locale, key: TranslationKey): string {
 }
 
 export function getLocaleFromUrl(url: URL | string): Locale {
-  const pathname = typeof url === 'string' ? url : url.pathname;
+  const pathname =
+    typeof url === 'string' ? (url.includes('://') ? new URL(url).pathname : url) : url.pathname;
   return pathname === '/es' || pathname.startsWith('/es/') ? 'es' : 'en';
 }
 

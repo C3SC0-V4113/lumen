@@ -10,6 +10,7 @@ describe('localization', () => {
 
   it('resolves locale from the URL and preserves the equivalent route', () => {
     expect(getLocaleFromUrl('https://lumen.example/')).toBe('en');
+    expect(getLocaleFromUrl('https://lumen.example/es/about')).toBe('es');
     expect(getLocaleFromUrl('/es/about')).toBe('es');
     expect(getEquivalentPath('/es/about')).toBe('/about');
     expect(getEquivalentPath('/about')).toBe('/es/about');
