@@ -76,7 +76,13 @@ function BreadcrumbSeparator({ children, className, ...props }: React.ComponentP
   );
 }
 
-function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<'span'>) {
+function BreadcrumbEllipsis({
+  className,
+  moreLabel,
+  ...props
+}: React.ComponentProps<'span'> & {
+  moreLabel: string;
+}) {
   return (
     <span
       data-slot="breadcrumb-ellipsis"
@@ -86,7 +92,7 @@ function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<'span'
       {...props}
     >
       <MoreHorizontalIcon />
-      <span className="sr-only">More</span>
+      <span className="sr-only">{moreLabel}</span>
     </span>
   );
 }

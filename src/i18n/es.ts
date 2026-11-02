@@ -8,6 +8,8 @@ const es: Record<keyof typeof en, string> = {
   'preferences.language': 'Idioma',
   'preferences.group': 'Preferencias',
   'preferences.theme': 'Tema oscuro',
+  'dialog.close': 'Cerrar',
+  'breadcrumb.more': 'Más',
 };
 
 export default es;

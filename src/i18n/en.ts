@@ -6,6 +6,8 @@ const en = {
   'preferences.language': 'Language',
   'preferences.group': 'Preferences',
   'preferences.theme': 'Dark theme',
+  'dialog.close': 'Close',
+  'breadcrumb.more': 'More',
 };
 
 export default en;

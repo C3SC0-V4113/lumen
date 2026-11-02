@@ -6,6 +6,10 @@ describe('localization', () => {
   it('returns typed translations for both dictionaries', () => {
     expect(t('en', 'home.title')).toBe('Stories for curious minds.');
     expect(t('es', 'home.title')).toBe('Historias para mentes curiosas.');
+    expect(t('en', 'dialog.close')).toBe('Close');
+    expect(t('es', 'dialog.close')).toBe('Cerrar');
+    expect(t('en', 'breadcrumb.more')).toBe('More');
+    expect(t('es', 'breadcrumb.more')).toBe('Más');
   });
 
   it('resolves locales from paths, queries, hashes, and absolute URLs', () => {
