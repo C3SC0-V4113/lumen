@@ -12,8 +12,9 @@ This file is the source of truth for the shared public site and CMS interface.
   `light` or `dark`.
 - Use semantic colors (`background`, `foreground`, `muted`, `primary`, `success`, `warning`,
   `info`, and `destructive`) instead of raw palette colors.
-- All text pairs meet WCAG AA contrast. The unit suite reads the source tokens and checks each
-  surface palette.
+- The contrast suite checks selected text pairs against WCAG AA (4.5:1) and input boundaries against
+  the 3:1 non-text threshold across each surface palette. It does not claim coverage of every possible
+  token combination.
 
 ## Typography
 
@@ -44,7 +45,10 @@ The fonts are self-hosted with Fontsource. Do not add Google Fonts or external f
 
 ## Lint rules
 
-`pnpm run lint` enforces these rules with `@shadcn/lint`; do not disable them:
+`pnpm run lint` applies the rules below through `@shadcn/lint`. `src/components/ui/**` is excluded
+from ESLint, and `doctor.config.json` also excludes those registry primitives. Product-specific
+variants are intentionally defined alongside the primitives in `src/components/ui/`; do not disable
+the rules for the rest of the application:
 
 - `shadcn/no-restyle`: use a primitive variant or size for appearance; `className` is for layout.
 - `shadcn/no-raw-colors`: use semantic tokens instead of raw palette classes.
