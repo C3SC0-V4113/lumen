@@ -1,16 +1,21 @@
-# Astro with Tailwind
+# Lumen
+
+Lumen is the foundation for an independent game studio website and private content management
+system. This phase establishes shared visual tokens, accessible shadcn components, English and
+Spanish localization, and persistent theme preferences. Public pages use Astro server rendering;
+small React islands handle the language and theme controls.
+
+## Development
+
+Requirements: Node.js 22.23.4 or newer and pnpm 12.
 
 ```sh
-pnpm create astro@latest -- --template with-tailwindcss
+pnpm install
+pnpm run dev
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/with-tailwindcss)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/with-tailwindcss)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/with-tailwindcss/devcontainer.json)
-
-Astro comes with [Tailwind](https://tailwindcss.com) support out of the box. This example showcases how to style your Astro project with Tailwind.
-
-For complete setup instructions, please see our [Tailwind Styling Guide](https://docs.astro.build/en/guides/styling/#tailwind).
+See [DESIGN.md](DESIGN.md) for surfaces, tokens, typography, and interface rules. Durable product
+constraints are recorded in [docs/adr/](docs/adr/).
 
 <!-- BEGIN:purrfold-managed -->
 
