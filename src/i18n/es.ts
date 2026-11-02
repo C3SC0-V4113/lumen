@@ -1,0 +1,11 @@
+import type en from './en';
+
+const es: Record<keyof typeof en, string> = {
+  'home.eyebrow': 'Estudio independiente de videojuegos',
+  'home.title': 'Historias para mentes curiosas.',
+  'home.description': 'Lumen crea juegos con intención y un poco de luz.',
+  'preferences.language': 'Idioma',
+  'preferences.theme': 'Cambiar tema de color',
+};
+
+export default es;
