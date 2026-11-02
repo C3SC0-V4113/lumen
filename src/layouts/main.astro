@@ -34,6 +34,13 @@ const { surface = 'site', lang = 'en', title = 'Lumen' } = Astro.props;
         }
       })();
     </script>
+    {import.meta.env.DEV && (
+      <script
+        is:inline
+        crossorigin="anonymous"
+        src="//unpkg.com/react-scan@0.5.7/dist/auto.global.js"
+      ></script>
+    )}
     <slot name="head" />
   </head>
   <body>
