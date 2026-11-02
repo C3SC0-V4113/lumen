@@ -12,7 +12,7 @@ const surfaces = [
 
 function oklchToRgb(value: string): [number, number, number] {
   const [, lightness, chroma, hue] = value.match(
-    /oklch\((\d+\.\d+)\s+(\d+\.\d+)\s+(\d+(?:\.\d+)?)\)/
+    /oklch\(((?:\d+\.\d+|\d+))\s+((?:\d+\.\d+|\d+))\s+(\d+(?:\.\d+)?)\)/
   )!;
   const L = Number(lightness);
   const C = Number(chroma);
@@ -42,7 +42,7 @@ function palette(surface: string, dark: boolean) {
   const selector = `[data-surface='${surface}']${dark ? '.dark' : ''}`;
   const section = css
     .split(/(?=^\[data-surface)/m)
-    .find((part) => part.startsWith(`${selector} {`) && part.includes('--background:'));
+    .find((part) => part.includes(`${selector} {`) && part.includes('--background:'));
   if (!section) throw new Error(`Missing palette ${selector}`);
   const rootSection = css.slice(0, css.indexOf("[data-surface='site'] {"));
   const parseColors = (source: string) =>
@@ -71,7 +71,11 @@ function contrast(foreground: string, background: string) {
 describe('theme color format', () => {
   it('uses only OKLCH values in global.css', () => {
     expect(css).not.toMatch(/#[\da-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(/i);
-    expect(css.match(/oklch\(/g)?.length).toBeGreaterThan(0);
+    const tokens = [...css.matchAll(/oklch\(([^)]+)\)/g)].map(([, values]) => values);
+    expect(tokens.length).toBeGreaterThan(0);
+    expect(
+      tokens.every((value) => /^(?:0\.\d{3} 0\.\d{3} \d{1,3}(?:\.\d{1,2})?|1 0 0)$/.test(value))
+    ).toBe(true);
   });
 
   it.each([
