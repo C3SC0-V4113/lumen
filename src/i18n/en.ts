@@ -7,6 +7,7 @@ const en = {
   'preferences.group': 'Preferences',
   'preferences.theme': 'Dark theme',
   'dialog.close': 'Close',
+  'toast.close': 'Close notification',
   'breadcrumb.more': 'More',
 };
 

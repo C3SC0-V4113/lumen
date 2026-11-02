@@ -36,6 +36,8 @@ The fonts are self-hosted with Fontsource. Do not add Google Fonts or external f
 - Use shadcn primitives before custom markup. Product-owned reusable compositions belong in
   `src/components/common/`; feature components belong in their feature folder.
 - Use lucide icons with `currentColor` and accessible names for icon-only buttons.
+- Use the flash cookie for short-lived messages that must survive a redirect. For feedback from an
+  action already on the current page, call `toast.add` directly.
 
 ## Motion and focus
 

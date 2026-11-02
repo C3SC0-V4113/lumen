@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 
+import { FlashToast } from '../components/common/flash-toast';
 import Prefs from '../components/common/prefs';
 import { t } from '../i18n';
 
@@ -57,5 +58,6 @@ const { surface = 'site', lang = 'en', title = 'Lumen' } = Astro.props;
     <main id="main-content" tabindex="-1">
       <slot />
     </main>
+    <FlashToast client:idle lang={lang} />
   </body>
 </html>

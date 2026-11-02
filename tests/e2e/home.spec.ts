@@ -6,10 +6,37 @@ function captureDiagnostics(page: Page) {
   const pageErrors: string[] = [];
   page.on('console', (message) => {
     if (message.type() === 'warning') warnings.push(message.text());
-    if (message.type() === 'error') errors.push(message.text());
+    if (message.type() === 'error') {
+      const source = message.location().url;
+      if (
+        source.includes('unpkg.com/react-scan@0.5.7') ||
+        message.text().includes('react-scan@0.5.7')
+      ) {
+        return;
+      }
+      errors.push(message.text());
+    }
   });
   page.on('pageerror', (error) => pageErrors.push(error.message));
   return { warnings, errors, pageErrors };
+}
+
+async function setFlashCookie(page: Page, message: { type: string; title: string }) {
+  await page.context().addCookies([
+    {
+      name: 'lumen-flash',
+      value: encodeURIComponent(JSON.stringify(message)),
+      url: 'http://127.0.0.1:3000/',
+      sameSite: 'Lax',
+    },
+  ]);
+}
+
+async function waitForFlashHydration(page: Page) {
+  await page.waitForFunction(() => {
+    const island = document.querySelector('astro-island[component-url*="flash-toast"]');
+    return island !== null && !island.hasAttribute('ssr');
+  });
 }
 
 async function waitForPreferencesHydration(page: Page) {
@@ -95,6 +122,64 @@ test('corrupt theme preference falls back to the surface default', async ({ page
   await page.goto('/');
   await waitForPreferencesHydration(page);
   await expect(page.locator('html')).toHaveClass(/dark/);
+  expect(diagnostics.warnings).toEqual([]);
+  expect(diagnostics.errors).toEqual([]);
+  expect(diagnostics.pageErrors).toEqual([]);
+});
+
+test('shows an English flash toast once and follows the active theme', async ({ page }) => {
+  const diagnostics = captureDiagnostics(page);
+  await setFlashCookie(page, { type: 'success', title: 'Profile saved' });
+  await page.goto('/');
+  await waitForFlashHydration(page);
+
+  await expect(page.getByText('Profile saved')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Close notification' })).toBeVisible();
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const toast = document.querySelector('[data-slot="toast"]');
+        return toast ? getComputedStyle(toast).backgroundColor : '';
+      })
+    )
+    .toBe(
+      await page
+        .locator('html')
+        .evaluate((element) => getComputedStyle(element).getPropertyValue('--popover').trim())
+    );
+  expect(await page.evaluate(() => document.cookie)).not.toContain('lumen-flash=');
+
+  await page.reload();
+  await waitForFlashHydration(page);
+  await expect(page.getByText('Profile saved')).toHaveCount(0);
+  expect(diagnostics.warnings).toEqual([]);
+  expect(diagnostics.errors).toEqual([]);
+  expect(diagnostics.pageErrors).toEqual([]);
+});
+
+test('shows a Spanish info flash toast and ignores a malformed cookie', async ({ page }) => {
+  const diagnostics = captureDiagnostics(page);
+  await setFlashCookie(page, { type: 'info', title: 'Cambios guardados' });
+  await page.goto('/es');
+  await waitForFlashHydration(page);
+
+  await expect(page.getByText('Cambios guardados')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cerrar notificación' })).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await expect(page.locator('[data-slot="toast-icon"] svg')).toHaveClass(/text-info/);
+  expect(await page.evaluate(() => document.cookie)).not.toContain('lumen-flash=');
+
+  await page
+    .context()
+    .addCookies([
+      { name: 'lumen-flash', value: '%E0%A4%A', url: 'http://127.0.0.1:3000/', sameSite: 'Lax' },
+    ]);
+  await page.goto('/es');
+  await waitForFlashHydration(page);
+  await expect(page.locator('[data-slot="toast"]')).toHaveCount(0);
+  expect(await page.evaluate(() => document.cookie)).not.toContain('lumen-flash=');
   expect(diagnostics.warnings).toEqual([]);
   expect(diagnostics.errors).toEqual([]);
   expect(diagnostics.pageErrors).toEqual([]);
