@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { expect, test } from '@playwright/test';
 
 const policyHeaderNames = [
@@ -48,6 +50,15 @@ test('sends security headers once on normal, localized, and missing routes', asy
   }
 });
 
+test('renders Astro’s custom 500 page with hardened headers', async ({ page }) => {
+  const response = await page.goto('/500');
+  expect(response?.status()).toBe(500);
+  await expect(page.getByRole('heading', { name: 'Something went wrong.' })).toBeVisible();
+  expect(response?.headers()['x-frame-options']).toBe('DENY');
+  expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow');
+  expect(response?.headers()['content-security-policy']).toContain("frame-ancestors 'none'");
+});
+
 test('sends security headers on public assets', async ({ page }) => {
   const favicon = await page.request.get('/favicon.svg');
   expect(favicon.status()).toBe(200);
@@ -76,13 +87,40 @@ test('does not report CSP violations on localized pages or 404', async ({ page }
   const policy = response?.headers()['content-security-policy'];
   expect(policy).toContain("default-src 'self'");
   expect(policy).toContain("style-src-attr 'unsafe-hashes'");
-  expect(policy).toContain('sha256-5F9GrKBhqyaNOeYUtJnXqF6zx18El+yIK5QJdjPDOus=');
   expect(policy).toMatch(/script-src[^;]*sha256-/);
-  expect(policy).toContain('sha256-Az1ObD1cVxP1Z6jWBXHWKWoHXWBTKf6a4jWsIBWz6Rc=');
   expect(policy).not.toMatch(/script-src[^;]*'unsafe-inline'/);
   expect(policy).not.toMatch(/style-src-attr[^;]*'unsafe-inline'/);
   expect(policy).not.toContain('unpkg.com');
   await expect(page.locator('script[src*="unpkg.com"]')).toHaveCount(0);
+});
+
+test('CSP hashes the rendered theme script and Base UI inline styles', async ({ page }) => {
+  const response = await page.goto('/');
+  const policy = response?.headers()['content-security-policy'] ?? '';
+  const themeScript = await page.locator('head script:not([src])').first().textContent();
+  expect(themeScript).not.toBeNull();
+  const themeHash = createHash('sha256').update(themeScript!).digest('base64');
+  expect(policy, 'CSP must allow the current inline theme script hash').toContain(
+    `'sha256-${themeHash}'`
+  );
+
+  await page.waitForFunction(() => {
+    const island = document.querySelector('astro-island[component-url*="prefs"]');
+    return island !== null && !island.hasAttribute('ssr');
+  });
+
+  const language = page.getByRole('combobox', { name: 'Language' });
+  const visuallyHiddenInput = page.locator('input[style]');
+  await expect(visuallyHiddenInput).toHaveCount(1);
+  const styleAttribute = await visuallyHiddenInput.getAttribute('style');
+  expect(styleAttribute).not.toBeNull();
+  const attributeHash = createHash('sha256').update(styleAttribute!).digest('base64');
+  expect(policy, 'Base UI style attribute changed; review and update the CSP hash').toContain(
+    `'sha256-${attributeHash}'`
+  );
+
+  await language.click();
+  await expect(page.getByRole('listbox')).toBeVisible();
 });
 
 test('does not report CSP violations while the flash toast is visible', async ({ page }) => {

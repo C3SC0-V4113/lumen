@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -5,12 +8,38 @@ import {
   getContentSecurityPolicyHeader,
   getHttpsRedirectLocation,
   getRobotsTag,
+  hardenResponse,
   securityHeaders,
   staticSecurityHeaders,
   shouldRedirectToHttps,
 } from '../../src/lib/security-headers';
 
 describe('security headers', () => {
+  it('keeps the configured inline theme hash synchronized with its source', () => {
+    const layout = readFileSync('src/layouts/main.astro', 'utf8');
+    const script = layout.match(/<script is:inline>([\s\S]*?)<\/script>/)?.[1];
+    expect(script, 'Expected the inline theme bootstrap in the main layout').toBeDefined();
+    const hash = createHash('sha256').update(script!).digest('base64');
+    const config = readFileSync('astro.config.mjs', 'utf8');
+
+    expect(config, 'Update astro.config.mjs when the theme bootstrap changes').toContain(
+      `'sha256-${hash}'`
+    );
+  });
+
+  it('keeps Base UI inline style hashes synchronized with the installed package', () => {
+    const baseUiStyles = readFileSync('node_modules/@base-ui/react/utils/styles.js', 'utf8');
+    const className = baseUiStyles.match(/DISABLE_SCROLLBAR_CLASS_NAME = '([^']+)'/)?.[1];
+    const cssTemplate = baseUiStyles.match(/children: `([^`]+)`/)?.[1];
+    expect(className, 'Base UI scrollbar class was not found').toBeDefined();
+    expect(cssTemplate, 'Base UI scrollbar stylesheet was not found').toBeDefined();
+    const css = cssTemplate!.replaceAll('${DISABLE_SCROLLBAR_CLASS_NAME}', className!);
+    const hash = createHash('sha256').update(css).digest('base64');
+    const config = readFileSync('astro.config.mjs', 'utf8');
+
+    expect(config, 'Update CSP when Base UI scrollbar styles change').toContain(`'sha256-${hash}'`);
+  });
+
   it('applies the policy and omits HSTS on plain HTTP', () => {
     const headers = new Headers();
     applySecurityHeaders(headers, 'http:');
@@ -42,6 +71,16 @@ describe('security headers', () => {
     expect(getHttpsRedirectLocation(new URL('http://localhost:4174/a'))).toBeUndefined();
   });
 
+  it('copies immutable redirect headers before applying security policy', () => {
+    const response = Response.redirect('https://example.com/next', 308);
+    const hardened = hardenResponse(response, new URL('https://example.com/'), 'staging');
+
+    expect(hardened.status).toBe(308);
+    expect(hardened.headers.get('location')).toBe('https://example.com/next');
+    expect(hardened.headers.get('x-frame-options')).toBe('DENY');
+    expect(hardened.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+  });
+
   it('marks non-production environments as noindex', () => {
     expect(getRobotsTag('local')).toBe('noindex, nofollow');
     expect(getRobotsTag('staging')).toBe('noindex, nofollow');
@@ -49,7 +88,7 @@ describe('security headers', () => {
   });
 
   it('upgrades insecure subresources only for public hosts', () => {
-    expect(getContentSecurityPolicyHeader('lumen-staging.workers.dev')).toBe(
+    expect(getContentSecurityPolicyHeader('lumen-staging.cescovalledev.workers.dev')).toBe(
       "frame-ancestors 'none'; upgrade-insecure-requests"
     );
     expect(getContentSecurityPolicyHeader('localhost')).toBe("frame-ancestors 'none'");
@@ -58,7 +97,7 @@ describe('security headers', () => {
   it('preserves Astro CSP directives and replaces ineffective frame-ancestors duplicates', () => {
     expect(
       getContentSecurityPolicyHeader(
-        'lumen-staging.workers.dev',
+        'lumen-staging.cescovalledev.workers.dev',
         "default-src 'self'; script-src 'self' 'sha256-test'; frame-ancestors 'self'"
       )
     ).toBe(

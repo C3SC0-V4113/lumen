@@ -1,40 +1,38 @@
+import { SITE_ENV } from 'astro:env/server';
 import { defineMiddleware } from 'astro:middleware';
 
-import {
-  applySecurityHeaders,
-  getContentSecurityPolicyHeader,
-  getHttpsRedirectLocation,
-  getRobotsTag,
-} from './lib/security-headers';
+import { getHttpsRedirectLocation, hardenResponse } from './lib/security-headers';
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
-  const harden = (response: Response) => {
-    applySecurityHeaders(response.headers, url.protocol);
-    const robotsTag = getRobotsTag(import.meta.env.SITE_ENV);
-    if (robotsTag) response.headers.set('X-Robots-Tag', robotsTag);
-    response.headers.set(
-      'Content-Security-Policy',
-      getContentSecurityPolicyHeader(
-        url.hostname,
-        response.headers.get('Content-Security-Policy') ?? undefined
-      )
-    );
-    return response;
-  };
   const redirectLocation = getHttpsRedirectLocation(url);
   if (redirectLocation) {
-    return harden(
+    return hardenResponse(
       new Response(null, {
         status: 308,
         headers: { Location: redirectLocation },
-      })
+      }),
+      url,
+      SITE_ENV
     );
   }
 
   try {
-    return harden(await next());
-  } catch {
-    return harden(new Response('Internal Server Error', { status: 500 }));
+    return hardenResponse(await next(), url, SITE_ENV);
+  } catch (error) {
+    console.error(
+      '[middleware] Request failed:',
+      error instanceof Error ? error.name : 'Unknown error'
+    );
+    const errorPage = await context.rewrite('/500');
+    return hardenResponse(
+      new Response(errorPage.body, {
+        status: 500,
+        statusText: errorPage.statusText,
+        headers: errorPage.headers,
+      }),
+      url,
+      SITE_ENV
+    );
   }
 });

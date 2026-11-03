@@ -41,6 +41,25 @@ export function getContentSecurityPolicyHeader(hostname: string, existingPolicy?
   return directives.join('; ');
 }
 
+export function hardenResponse(response: Response, url: URL, siteEnv: string) {
+  const headers = new Headers(response.headers);
+  applySecurityHeaders(headers, url.protocol);
+  const robotsTag = getRobotsTag(siteEnv);
+  if (robotsTag) headers.set('X-Robots-Tag', robotsTag);
+  headers.set(
+    'Content-Security-Policy',
+    getContentSecurityPolicyHeader(
+      url.hostname,
+      headers.get('Content-Security-Policy') ?? undefined
+    )
+  );
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export function applySecurityHeaders(headers: Headers, protocol: string) {
   for (const [name, value] of Object.entries(securityHeaders)) {
     if (name !== 'Strict-Transport-Security' || protocol === 'https:') {

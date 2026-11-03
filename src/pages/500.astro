@@ -1,0 +1,19 @@
+---
+import Logo from '../components/common/logo.astro';
+import Layout from '../layouts/main.astro';
+
+Astro.response.status = 500;
+---
+
+<Layout lang="en" surface="site" title="Lumen — Something went wrong">
+  <Logo slot="brand" />
+  <section class="mx-auto flex min-h-[65vh] max-w-6xl flex-col justify-center px-6 py-20">
+    <h1 class="max-w-3xl text-5xl leading-tight md:text-7xl">Something went wrong.</h1>
+    <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+      Please try again in a moment.
+    </p>
+    <a class="mt-8 w-fit text-primary underline" href="/">
+      Return home
+    </a>
+  </section>
+</Layout>
