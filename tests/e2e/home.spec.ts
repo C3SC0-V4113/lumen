@@ -1,5 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+  await page.context().route('**/*', (route) => {
+    if (new URL(route.request().url()).hostname === 'unpkg.com') return route.abort();
+    return route.continue();
+  });
+});
+
 function captureDiagnostics(page: Page) {
   const warnings: string[] = [];
   const errors: string[] = [];
@@ -8,12 +15,7 @@ function captureDiagnostics(page: Page) {
     if (message.type() === 'warning') warnings.push(message.text());
     if (message.type() === 'error') {
       const source = message.location().url;
-      if (
-        source.includes('unpkg.com/react-scan@0.5.7') ||
-        message.text().includes('react-scan@0.5.7')
-      ) {
-        return;
-      }
+      if (source === 'http://unpkg.com/react-scan@0.5.7/dist/auto.global.js') return;
       errors.push(message.text());
     }
   });
@@ -26,7 +28,7 @@ async function setFlashCookie(page: Page, message: { type: string; title: string
     {
       name: 'lumen-flash',
       value: encodeURIComponent(JSON.stringify(message)),
-      url: 'http://127.0.0.1:3000/',
+      url: 'http://localhost:3000/',
       sameSite: 'Lax',
     },
   ]);
@@ -134,21 +136,29 @@ test('shows an English flash toast once and follows the active theme', async ({ 
   await waitForFlashHydration(page);
 
   await expect(page.getByText('Profile saved')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Close notification' })).toBeVisible();
   await expect(page.locator('html')).toHaveClass(/dark/);
-  await expect
-    .poll(() =>
-      page.evaluate(() => {
-        const toast = document.querySelector('[data-slot="toast"]');
-        return toast ? getComputedStyle(toast).backgroundColor : '';
-      })
-    )
-    .toBe(
-      await page
-        .locator('html')
-        .evaluate((element) => getComputedStyle(element).getPropertyValue('--popover').trim())
-    );
+  const themeColors = await page.evaluate(() => {
+    const html = document.documentElement;
+    const toast = document.querySelector('[data-slot="toast"]');
+    if (!toast) return null;
+    const dark = getComputedStyle(toast).backgroundColor;
+    html.classList.remove('dark');
+    const light = getComputedStyle(toast).backgroundColor;
+    html.classList.add('dark');
+    const restored = getComputedStyle(toast).backgroundColor;
+    return { dark, light, restored };
+  });
+  expect(themeColors).not.toBeNull();
+  expect(themeColors?.dark).not.toBe(themeColors?.light);
+  expect(themeColors?.restored).toBe(themeColors?.dark);
   expect(await page.evaluate(() => document.cookie)).not.toContain('lumen-flash=');
+
+  await page.keyboard.press('F6');
+  await expect(page.locator('[data-slot="toast-viewport"]')).toBeFocused();
+  const closeButton = page.getByRole('button', { name: 'Close notification' });
+  await expect(closeButton).toBeVisible();
+  await closeButton.focus();
+  await expect(closeButton).toBeFocused();
 
   await page.reload();
   await waitForFlashHydration(page);
@@ -165,6 +175,7 @@ test('shows a Spanish info flash toast and ignores a malformed cookie', async ({
   await waitForFlashHydration(page);
 
   await expect(page.getByText('Cambios guardados')).toBeVisible();
+  await page.locator('[data-slot="toast-viewport"]').hover();
   await expect(page.getByRole('button', { name: 'Cerrar notificación' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
   await expect(page.locator('html')).toHaveClass(/dark/);
@@ -174,7 +185,7 @@ test('shows a Spanish info flash toast and ignores a malformed cookie', async ({
   await page
     .context()
     .addCookies([
-      { name: 'lumen-flash', value: '%E0%A4%A', url: 'http://127.0.0.1:3000/', sameSite: 'Lax' },
+      { name: 'lumen-flash', value: '%E0%A4%A', url: 'http://localhost:3000/', sameSite: 'Lax' },
     ]);
   await page.goto('/es');
   await waitForFlashHydration(page);
@@ -183,4 +194,19 @@ test('shows a Spanish info flash toast and ignores a malformed cookie', async ({
   expect(diagnostics.warnings).toEqual([]);
   expect(diagnostics.errors).toEqual([]);
   expect(diagnostics.pageErrors).toEqual([]);
+});
+
+test('closes a flash toast with its keyboard-accessible close button', async ({ page }) => {
+  await setFlashCookie(page, { type: 'success', title: 'Saved before close' });
+  await page.goto('/');
+  await waitForFlashHydration(page);
+  await expect(page.getByText('Saved before close')).toBeVisible();
+
+  await page.keyboard.press('F6');
+  await expect(page.locator('[data-slot="toast-viewport"]')).toBeFocused();
+  const closeButton = page.getByRole('button', { name: 'Close notification' });
+  await expect(closeButton).toBeVisible();
+  await closeButton.click();
+
+  await expect(page.locator('[data-slot="toast"]')).toHaveCount(0);
 });
