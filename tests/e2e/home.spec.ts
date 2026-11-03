@@ -17,7 +17,7 @@ async function setFlashCookie(page: Page, message: { type: string; title: string
     {
       name: 'lumen-flash',
       value: encodeURIComponent(JSON.stringify(message)),
-      url: 'http://localhost:3000/',
+      url: 'http://127.0.0.1:3000/',
       sameSite: 'Lax',
     },
   ]);
@@ -124,6 +124,7 @@ test('shows an English flash toast once and follows the active theme', async ({ 
   await page.goto('/');
   await waitForFlashHydration(page);
 
+  await expect(page.getByRole('region', { name: 'Notifications' })).toBeAttached();
   await expect(page.getByText('Profile saved')).toBeVisible();
   await expect(page.locator('html')).toHaveClass(/dark/);
   const themeColors = await page.evaluate(() => {
@@ -143,11 +144,21 @@ test('shows an English flash toast once and follows the active theme', async ({ 
   expect(await page.evaluate(() => document.cookie)).not.toContain('lumen-flash=');
 
   await page.keyboard.press('F6');
-  await expect(page.locator('[data-slot="toast-viewport"]')).toBeFocused();
+  const viewport = page.locator('[data-slot="toast-viewport"]');
+  await expect(viewport).toBeFocused();
+  await expect
+    .poll(() => viewport.evaluate((element) => getComputedStyle(element).outlineStyle))
+    .toBe('solid');
+  await expect
+    .poll(() => viewport.evaluate((element) => getComputedStyle(element).outlineWidth))
+    .toBe('3px');
   const closeButton = page.getByRole('button', { name: 'Close notification' });
   await expect(closeButton).toBeVisible();
   await closeButton.focus();
   await expect(closeButton).toBeFocused();
+  await expect
+    .poll(() => closeButton.evaluate((element) => getComputedStyle(element).outlineStyle))
+    .toBe('solid');
 
   await page.reload();
   await waitForFlashHydration(page);
@@ -163,6 +174,7 @@ test('shows a Spanish info flash toast and ignores a malformed cookie', async ({
   await page.goto('/es');
   await waitForFlashHydration(page);
 
+  await expect(page.getByRole('region', { name: 'Notificaciones' })).toBeAttached();
   await expect(page.getByText('Cambios guardados')).toBeVisible();
   await page.locator('[data-slot="toast-viewport"]').hover();
   await expect(page.getByRole('button', { name: 'Cerrar notificación' })).toBeVisible();
@@ -174,7 +186,7 @@ test('shows a Spanish info flash toast and ignores a malformed cookie', async ({
   await page
     .context()
     .addCookies([
-      { name: 'lumen-flash', value: '%E0%A4%A', url: 'http://localhost:3000/', sameSite: 'Lax' },
+      { name: 'lumen-flash', value: '%E0%A4%A', url: 'http://127.0.0.1:3000/', sameSite: 'Lax' },
     ]);
   await page.goto('/es');
   await waitForFlashHydration(page);

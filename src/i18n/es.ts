@@ -10,6 +10,7 @@ const es: Record<keyof typeof en, string> = {
   'preferences.theme': 'Tema oscuro',
   'dialog.close': 'Cerrar',
   'toast.close': 'Cerrar notificación',
+  'toast.region': 'Notificaciones',
   'breadcrumb.more': 'Más',
 };
 

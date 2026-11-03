@@ -6,7 +6,12 @@ import { FlashToast } from '@/components/common/flash-toast';
 const mocks = vi.hoisted(() => ({ add: vi.fn() }));
 
 vi.mock('@/components/ui/toast', () => ({
-  Toaster: ({ closeLabel }: { closeLabel: string }) => <div>{closeLabel}</div>,
+  Toaster: ({ closeLabel, viewportLabel }: { closeLabel: string; viewportLabel: string }) => (
+    <div>
+      <span>{closeLabel}</span>
+      <span>{viewportLabel}</span>
+    </div>
+  ),
   toast: { add: mocks.add },
 }));
 
@@ -22,10 +27,9 @@ describe('FlashToast', () => {
 
   it.each([
     ['success', 'success'],
-    ['error', 'error'],
     ['info', 'info'],
   ] as const)(
-    'shows %s with its original type after clearing the cookie',
+    'shows %s with its original type and default timing after clearing the cookie',
     async (type, shownType) => {
       document.cookie = `lumen-flash=${encodeURIComponent(
         JSON.stringify({ type, title: 'Notice', description: 'Saved' })
@@ -46,9 +50,27 @@ describe('FlashToast', () => {
     }
   );
 
+  it('shows errors as persistent high-priority alerts', async () => {
+    document.cookie = `lumen-flash=${encodeURIComponent(
+      JSON.stringify({ type: 'error', title: 'Could not save' })
+    )}; Path=/`;
+
+    render(<FlashToast lang="en" />);
+
+    await waitFor(() =>
+      expect(mocks.add).toHaveBeenCalledWith({
+        type: 'error',
+        title: 'Could not save',
+        priority: 'high',
+        timeout: 0,
+      })
+    );
+  });
+
   it('localizes the toaster close label', () => {
     render(<FlashToast lang="es" />);
     expect(screen.getByText('Cerrar notificación')).toBeTruthy();
+    expect(screen.getByText('Notificaciones')).toBeTruthy();
   });
 
   it('ignores and clears a malformed cookie', async () => {

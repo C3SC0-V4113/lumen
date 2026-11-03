@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect } from 'react';
 
 import { Toaster, toast } from '@/components/ui/toast';
@@ -15,8 +13,14 @@ export function FlashToast({ lang }: { lang: Locale }) {
 
     const flash = readFlashCookieFromDocument();
     document.cookie = clearFlashCookie(location.protocol === 'https:');
-    if (flash) toast.add(flash);
+    if (flash) {
+      if (flash.type === 'error') {
+        toast.add({ ...flash, priority: 'high', timeout: 0 });
+      } else {
+        toast.add(flash);
+      }
+    }
   }, []);
 
-  return <Toaster closeLabel={t(lang, 'toast.close')} />;
+  return <Toaster closeLabel={t(lang, 'toast.close')} viewportLabel={t(lang, 'toast.region')} />;
 }

@@ -38,6 +38,8 @@ The fonts are self-hosted with Fontsource. Do not add Google Fonts or external f
 - Use lucide icons with `currentColor` and accessible names for icon-only buttons.
 - Use the flash cookie for short-lived messages that must survive a redirect. For feedback from an
   action already on the current page, call `toast.add` directly.
+- Mount exactly one `Toaster` per page. It is already mounted through `FlashToast` in
+  `src/layouts/main.astro`.
 
 ## Motion and focus
 

@@ -27,7 +27,7 @@ function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
     <ToastPrimitive.Viewport
       data-slot="toast-viewport"
       className={cn(
-        'pointer-events-none fixed inset-x-4 bottom-4 z-50 mx-auto flex w-auto max-w-sm flex-col gap-3 outline-none sm:right-4 sm:left-auto sm:mx-0 sm:w-full',
+        'pointer-events-none fixed inset-x-4 bottom-4 z-50 mx-auto flex w-auto max-w-sm flex-col gap-3 sm:right-4 sm:left-auto sm:mx-0 sm:w-full',
         className
       )}
       {...props}
@@ -40,7 +40,7 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
     <ToastPrimitive.Root
       data-slot="toast"
       className={cn(
-        'group/toast pointer-events-auto relative w-full rounded-xl border bg-popover text-popover-foreground shadow-lg transition-opacity duration-150 ease-out outline-none select-none data-ending-style:opacity-0 data-limited:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
+        'group/toast pointer-events-auto relative w-full rounded-xl border bg-popover text-popover-foreground shadow-lg transition-opacity duration-150 ease-out select-none data-ending-style:opacity-0 data-limited:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
         className
       )}
       {...props}
@@ -175,13 +175,14 @@ function Toaster({
   children,
   toastManager = toast,
   closeLabel,
+  viewportLabel,
   ...props
-}: ToastPrimitive.Provider.Props & { closeLabel: string }) {
+}: ToastPrimitive.Provider.Props & { closeLabel: string; viewportLabel: string }) {
   return (
     <ToastProvider toastManager={toastManager} {...props}>
       {children}
       <ToastPortal>
-        <ToastViewport>
+        <ToastViewport aria-label={viewportLabel}>
           <ToastList closeLabel={closeLabel} />
         </ToastViewport>
       </ToastPortal>

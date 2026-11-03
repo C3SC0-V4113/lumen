@@ -8,6 +8,7 @@ const en = {
   'preferences.theme': 'Dark theme',
   'dialog.close': 'Close',
   'toast.close': 'Close notification',
+  'toast.region': 'Notifications',
   'breadcrumb.more': 'More',
 };
 
