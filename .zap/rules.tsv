@@ -1,0 +1,6 @@
+# Worker responses are scanned over local HTTP. HSTS is covered by unit tests because
+# compliant browsers ignore it on HTTP; the deployed workers.dev endpoint is HTTPS.
+10020	FAIL	(Anti-clickjacking Header)
+10021	FAIL	(X-Content-Type-Options Header Missing)
+10038	FAIL	(Content Security Policy (CSP) Header Not Set)
+10063	FAIL	(Permissions Policy Header Not Set)
