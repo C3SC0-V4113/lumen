@@ -1,23 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
-  await page.context().route('**/*', (route) => {
-    if (new URL(route.request().url()).hostname === 'unpkg.com') return route.abort();
-    return route.continue();
-  });
-});
-
 function captureDiagnostics(page: Page) {
   const warnings: string[] = [];
   const errors: string[] = [];
   const pageErrors: string[] = [];
   page.on('console', (message) => {
     if (message.type() === 'warning') warnings.push(message.text());
-    if (message.type() === 'error') {
-      const source = message.location().url;
-      if (source === 'http://unpkg.com/react-scan@0.5.7/dist/auto.global.js') return;
-      errors.push(message.text());
-    }
+    if (message.type() === 'error') errors.push(message.text());
   });
   page.on('pageerror', (error) => pageErrors.push(error.message));
   return { warnings, errors, pageErrors };
