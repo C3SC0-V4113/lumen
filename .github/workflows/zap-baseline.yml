@@ -37,7 +37,7 @@ jobs:
       - name: Start local Worker
         run: |
           set -euo pipefail
-          nohup pnpm exec wrangler dev --host 127.0.0.1 --port 8787 > "$RUNNER_TEMP/wrangler.log" 2>&1 &
+          nohup pnpm exec wrangler dev --ip 127.0.0.1 --port 8787 > "$RUNNER_TEMP/wrangler.log" 2>&1 &
           echo "$!" > "$RUNNER_TEMP/wrangler.pid"
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:8787/ --output /dev/null; then
