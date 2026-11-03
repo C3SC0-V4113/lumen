@@ -1,36 +1,66 @@
-# Design Standard
+# Lumen Design System
 
-This file is the UI/UX source of truth for this app.
+This file is the source of truth for the shared public site and CMS interface.
 
-## Principles
+## Surfaces and themes
 
-- Build the actual product surface first; avoid marketing-only landing pages.
-- Prefer dense, calm, scannable layouts for operational tools.
-- Use semantic tokens from `src/styles/global.css`.
-- Keep loading, empty, error, and partial-data states explicit.
-- Make controls accessible, keyboard reachable, and clearly labeled.
+- The public site uses `data-surface="site"` and defaults to dark.
+- The CMS uses `data-surface="cms"` and defaults to light.
+- Each surface supports light and dark palettes through semantic shadcn tokens in
+  `src/styles/global.css`.
+- Persist preferences per surface. Theme initialization runs before paint and accepts only
+  `light` or `dark`.
+- Use semantic colors (`background`, `foreground`, `muted`, `primary`, `success`, `warning`,
+  `info`, and `destructive`) instead of raw palette colors.
+- All colors live in `src/styles/global.css` as `oklch()` tokens. Add new colors there in OKLCH;
+  do not introduce hex, RGB, or HSL color values.
+- The contrast suite checks selected text pairs against WCAG AA (4.5:1) and input boundaries against
+  the 3:1 non-text threshold across each surface palette. It does not claim coverage of every possible
+  token combination.
 
-## Components
+## Typography
 
-- Use shadcn primitives before custom markup.
-- Use lucide icons for icon buttons and provide accessible labels.
-- Use tables for detailed records, cards for repeated metrics, and charts only when they answer a clear comparison question.
-- Do not nest cards inside cards.
+| Role      | Typeface                      | Use                                          |
+| --------- | ----------------------------- | -------------------------------------------- |
+| Display   | Fraunces Variable, weight 600 | Headings with slight negative tracking       |
+| Interface | Instrument Sans Variable      | Body copy and controls                       |
+| Data      | JetBrains Mono, weight 500    | Code and numeric values; use tabular figures |
 
-## Lint Enforcement
+The fonts are self-hosted with Fontsource. Do not add Google Fonts or external font requests.
 
-The `lint` script enforces these rules with `@shadcn/lint`, and each error points back to this file:
+## Shape, layout, and controls
 
-- `shadcn/no-restyle`: do not restyle a component through `className`. Layout classes such as `mt-4` and `w-full` are allowed; use a variant or size for anything else.
-- `shadcn/no-raw-colors`: use semantic tokens instead of raw palette colors such as `bg-pink-500`.
-- `shadcn/no-arbitrary-values`: stay on the theme scale instead of arbitrary values such as `p-[13px]`; arbitrary layout values are allowed.
-- `shadcn/no-inline-styles`: do not use inline styles or `<style>` elements in components.
-- `shadcn/require-static-classes`: keep component classes readable by the linter; do not interpolate them, as in `bg-${color}`.
-- `shadcn/no-unknown-classes`: only use classes Tailwind can generate.
+- Base radius is `0.625rem` (10px). Use Tailwind radius utilities; public pills use `rounded-full`.
+- Public interactive controls use the `touch` size, with a minimum 44px target.
+- Keep layouts calm and readable, with explicit loading, empty, error, and partial-data states.
+- Use shadcn primitives before custom markup. Product-owned reusable compositions belong in
+  `src/components/common/`; feature components belong in their feature folder.
+- Use lucide icons with `currentColor` and accessible names for icon-only buttons.
+- Use the flash cookie for short-lived messages that must survive a redirect. For feedback from an
+  action already on the current page, call `toast.add` directly.
+- Mount exactly one `Toaster` per page. It is already mounted through `FlashToast` in
+  `src/layouts/main.astro`.
 
-Fix a violation with a token, variant, or size from the design system, and add one to the component only when the design calls for it. Do not disable the rules.
+## Motion and focus
 
-## Motion
+- Focus is always visible: a 3px ring in the semantic `focus` color with a 2px offset.
+- Use transitions for interactive state changes and name the properties being transitioned.
+- Theme icon transitions use opacity, scale, and blur for 300ms with
+  `cubic-bezier(0.2, 0, 0, 1)`. Reduced motion uses a short fade without scale or blur.
+- Respect `prefers-reduced-motion`; motion never carries the only state cue.
 
-- Use subtle transitions only when they clarify state.
-- Respect reduced-motion preferences for non-trivial animation.
+## Lint rules
+
+`pnpm run lint` applies the rules below through `@shadcn/lint`. `src/components/ui/**` is excluded
+from ESLint, and `doctor.config.json` also excludes those registry primitives. Product-specific
+variants are intentionally defined alongside the primitives in `src/components/ui/`; do not disable
+the rules for the rest of the application:
+
+- `shadcn/no-restyle`: use a primitive variant or size for appearance; `className` is for layout.
+- `shadcn/no-raw-colors`: use semantic tokens instead of raw palette classes.
+- `shadcn/no-arbitrary-values`: use the Tailwind scale and theme tokens.
+- `shadcn/no-inline-styles`: no inline styles or component `<style>` blocks.
+- `shadcn/require-static-classes`: keep utility class names static.
+- `shadcn/no-unknown-classes`: use classes known to Tailwind.
+
+See [Architecture Decision Records](docs/adr/) for durable project constraints.

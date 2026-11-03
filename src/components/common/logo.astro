@@ -1,0 +1,25 @@
+---
+interface Props {
+  label?: string;
+  href?: string;
+}
+
+const { label = 'Lumen', href = '/' } = Astro.props;
+---
+
+<a
+  href={href}
+  aria-label={label}
+  class="inline-flex items-center gap-3 font-heading text-xl font-semibold tracking-tight"
+>
+  <svg aria-hidden="true" viewBox="0 0 32 32" class="size-8 text-primary" fill="none">
+    <circle cx="16" cy="16" r="5" fill="currentColor" />
+    <path
+      d="M16 2v5m0 18v5M2 16h5m18 0h5M6.1 6.1l3.54 3.54m12.72 12.72 3.54 3.54m0-19.8-3.54 3.54M9.64 22.36 6.1 25.9"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-width="1.75"
+    />
+  </svg>
+  <span>{label}</span>
+</a>

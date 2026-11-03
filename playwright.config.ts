@@ -19,9 +19,9 @@ export default defineConfig({
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {
-    command: 'pnpm exec astro dev --ignore-lock --host 127.0.0.1 --port 3000',
-    url: baseUrl,
-    reuseExistingServer: !process.env.CI,
+    command: 'pnpm run build && pnpm exec astro preview --ignore-lock --host 127.0.0.1 --port 3000',
+    url: 'http://127.0.0.1:3000',
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });
