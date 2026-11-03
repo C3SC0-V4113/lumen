@@ -8,10 +8,19 @@ The `staging` GitHub environment requires:
 - `CLOUDFLARE_API_TOKEN` scoped to that account with Workers Scripts: Edit, D1: Edit, and Workers
   R2 Storage: Edit. Do not grant zone, DNS, user, or account-wide administration permissions.
 
-The workflow is triggered by pushes to `main`. It runs quality and Chromium E2E jobs first. The
-deploy job waits for both, builds the staging Worker, applies D1 migrations, deploys, and checks the
-staging URL and primary response headers. Deploys are serialized and an active deploy is never
-cancelled by a newer push.
+The workflow is triggered by pushes to `main`. It calls the reusable Quality and Playwright
+workflows as dependent jobs. The deploy job waits for both, builds the staging Worker, applies D1
+migrations, deploys, and checks `https://lumen-staging.cescovalledev.workers.dev` and the primary
+response headers. Deploys are serialized and an active deploy is never cancelled by a newer push.
+Every deploy command must include `--env staging`; the top-level Wrangler environment is local-only
+and has `workers_dev: false` as an additional guard.
+
+If an authorized operator must deploy manually, use the staging environment explicitly:
+
+```sh
+pnpm exec wrangler d1 migrations apply lumen-staging --remote --env staging
+pnpm exec wrangler deploy --env staging
+```
 
 The R2 binding is configured as `lumen-staging-media`; create that bucket in the account before the
 first staging deploy. Resource provisioning is not part of the workflow.

@@ -10,14 +10,17 @@ creation and production configuration are managed separately from this implement
 
 ## Decision
 
-Use a named `staging` Wrangler environment and deploy it from CI after quality and E2E jobs succeed.
-The deploy workflow owns those prerequisite jobs with a `needs` dependency, avoiding races between
-separate workflow-run events. Apply remote D1 migrations before publishing the Worker. Keep
-production configuration out of this phase.
+Use a named `staging` Wrangler environment and deploy it from CI after reusable Quality and Playwright
+workflows succeed. The deploy workflow calls them as dependent jobs, so it avoids duplicated job
+definitions and cannot race separate workflow-run events. Apply remote D1 migrations before
+publishing the Worker. Keep production configuration out of this phase. The local top-level
+environment has `workers_dev: false`; staging explicitly enables it. All deploy commands must use
+`--env staging`.
 
 ## Consequences
 
-The staging environment uses `workers.dev`, D1, KV sessions, and R2 media. The account and D1/KV
-IDs are configured in Wrangler; R2 bucket provisioning remains external. A GitHub `staging`
+The staging environment is `https://lumen-staging.cescovalledev.workers.dev` and uses D1, KV sessions,
+and R2 media. The account and D1/KV IDs are configured in Wrangler; R2 bucket provisioning remains
+external. A GitHub `staging`
 environment holds the Cloudflare credentials. Deploys cannot overlap, and an in-progress deploy is
 not cancelled by a later push.
