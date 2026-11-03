@@ -11,15 +11,18 @@ const FLASH_TYPES: readonly FlashType[] = ['success', 'error', 'info'];
 
 /** The cookie is client-readable and must never contain sensitive information. */
 export function flashCookieValue(message: FlashMessage) {
+  // Return the raw value for context.cookies.set, which applies encodeURIComponent when writing.
   return JSON.stringify(message);
 }
 
-export function flashCookieOptions() {
+export function flashCookieOptions(secure: boolean) {
+  // This is a host-only cookie with Path=/; writers must use these options so deletion reaches it.
   return {
     path: '/',
     maxAge: 60,
     sameSite: 'lax',
     httpOnly: false,
+    secure,
   } as const;
 }
 
@@ -30,7 +33,7 @@ function decodeFlashMessage(value: string): FlashMessage | null {
 
     const { type, title, description } = parsed as Record<string, unknown>;
     if (!FLASH_TYPES.includes(type as FlashType)) return null;
-    if (typeof title !== 'string' || title.length === 0 || title.length > 120) return null;
+    if (typeof title !== 'string' || title.trim().length === 0 || title.length > 120) return null;
     if (description !== undefined && typeof description !== 'string') return null;
     if (typeof description === 'string' && description.length > 300) return null;
 

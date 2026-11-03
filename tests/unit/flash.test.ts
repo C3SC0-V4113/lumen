@@ -22,6 +22,13 @@ describe('flash helpers', () => {
     });
   });
 
+  it('round-trips percent signs and emoji through the cookie encoding', () => {
+    const message = { type: 'info', title: '100% listo 🎉' } as const;
+    expect(
+      readFlashCookie(`${FLASH_COOKIE_NAME}=${encodeURIComponent(flashCookieValue(message))}`)
+    ).toEqual(message);
+  });
+
   it.each(['success', 'error', 'info'] as const)('accepts the %s type', (type) => {
     expect(readFlashCookie(asCookieHeader(JSON.stringify({ type, title: 'Aviso' })))).toEqual({
       type,
@@ -38,6 +45,7 @@ describe('flash helpers', () => {
       { type: 'info', title: {} },
       { type: 'info', title: 'Aviso', description: 4 },
       { type: 'info', title: '' },
+      { type: 'info', title: '   \t  ' },
     ]) {
       expect(readFlashCookie(asCookieHeader(JSON.stringify(message)))).toBeNull();
     }
@@ -57,11 +65,19 @@ describe('flash helpers', () => {
   });
 
   it('sets client-readable cookie attributes with a 60 second lifetime', () => {
-    expect(flashCookieOptions()).toEqual({
+    expect(flashCookieOptions(false)).toEqual({
       path: '/',
       maxAge: 60,
       sameSite: 'lax',
       httpOnly: false,
+      secure: false,
+    });
+    expect(flashCookieOptions(true)).toEqual({
+      path: '/',
+      maxAge: 60,
+      sameSite: 'lax',
+      httpOnly: false,
+      secure: true,
     });
   });
 
