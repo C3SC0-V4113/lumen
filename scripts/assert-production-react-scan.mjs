@@ -19,7 +19,7 @@ const leakedScript = await Promise.all(
     file,
     content: await readFile(file, 'utf8').catch(() => ''),
   }))
-).then((contents) => contents.find(({ content }) => content.includes('react-scan@0.5.7')));
+).then((contents) => contents.find(({ content }) => content.includes('unpkg.com/react-scan')));
 
 if (!files.length) throw new Error('The production build did not emit files in dist/.');
 if (leakedScript) {
