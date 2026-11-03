@@ -17,7 +17,8 @@ async function setFlashCookie(page: Page, message: { type: string; title: string
     {
       name: 'lumen-flash',
       value: encodeURIComponent(JSON.stringify(message)),
-      url: 'http://127.0.0.1:3000/',
+      domain: '127.0.0.1',
+      path: '/',
       sameSite: 'Lax',
     },
   ]);
@@ -183,11 +184,15 @@ test('shows a Spanish info flash toast and ignores a malformed cookie', async ({
   await expect(page.locator('[data-slot="toast-icon"] svg')).toHaveClass(/text-info/);
   expect(await page.evaluate(() => document.cookie)).not.toContain('lumen-flash=');
 
-  await page
-    .context()
-    .addCookies([
-      { name: 'lumen-flash', value: '%E0%A4%A', url: 'http://127.0.0.1:3000/', sameSite: 'Lax' },
-    ]);
+  await page.context().addCookies([
+    {
+      name: 'lumen-flash',
+      value: '%E0%A4%A',
+      domain: '127.0.0.1',
+      path: '/',
+      sameSite: 'Lax',
+    },
+  ]);
   await page.goto('/es');
   await waitForFlashHydration(page);
   await expect(page.locator('[data-slot="toast"]')).toHaveCount(0);
