@@ -8,6 +8,10 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply lumen-local --local",
+    "db:migrate:staging": "wrangler d1 migrations apply lumen-staging --remote --env staging",
+    "cf:typegen": "wrangler types",
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
@@ -42,6 +46,7 @@
     "astro": "^7.4.4",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.1",
+    "drizzle-orm": "^0.45.4",
     "lucide-react": "^1.64.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -65,9 +70,12 @@
     "@shadcn/lint": "0.2.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/react": "16.3.3",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "26.6.5",
     "@vitejs/plugin-react": "6.1.2",
     "@vitest/eslint-plugin": "1.6.28",
+    "better-sqlite3": "^13.0.3",
+    "drizzle-kit": "^0.31.11",
     "eslint": "9.39.5",
     "eslint-config-prettier": "10.1.8",
     "eslint-import-resolver-typescript": "4.4.5",
@@ -86,6 +94,7 @@
     "react-doctor": "0.9.18",
     "shadcn": "^4.23.0",
     "typescript-eslint": "8.72.1",
-    "vitest": "5.0.5"
+    "vitest": "5.0.5",
+    "wrangler": "4.156.0"
   }
 }
