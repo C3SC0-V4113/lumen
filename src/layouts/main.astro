@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { SITE_URL } from 'astro:env/server';
 
 import { FlashToast } from '../components/common/flash-toast';
 import Prefs from '../components/common/prefs';
@@ -18,6 +19,7 @@ const { surface = 'site', lang = 'en', title = 'Lumen' } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="canonical" href={new URL(Astro.url.pathname, SITE_URL)} />
     <title>{title}</title>
     <script is:inline>
       (() => {
