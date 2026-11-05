@@ -7,8 +7,10 @@ import {
   applySecurityHeaders,
   getContentSecurityPolicyHeader,
   getHttpsRedirectLocation,
+  hasNullBodyStatus,
   getRobotsTag,
   hardenResponse,
+  renderErrorPageSafely,
   securityHeaders,
   staticSecurityHeaders,
   shouldRedirectToHttps,
@@ -79,6 +81,51 @@ describe('security headers', () => {
     expect(hardened.headers.get('location')).toBe('https://example.com/next');
     expect(hardened.headers.get('x-frame-options')).toBe('DENY');
     expect(hardened.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+  });
+
+  it('uses a null body for statuses that forbid one', () => {
+    expect(hasNullBodyStatus(101)).toBe(true);
+    expect(hasNullBodyStatus(204)).toBe(true);
+    expect(hasNullBodyStatus(205)).toBe(true);
+    expect(hasNullBodyStatus(304)).toBe(true);
+    expect(hasNullBodyStatus(200)).toBe(false);
+  });
+
+  it.each([204, 205, 304])('uses a null body for status %s', (status) => {
+    const response = new Response(null, { status });
+    const hardened = hardenResponse(response, new URL('https://example.com/'), 'staging');
+    expect(hardened.status).toBe(status);
+    expect(hardened.body).toBeNull();
+  });
+
+  it('redirects non-loopback HTTP requests with hardened headers', () => {
+    const url = new URL('http://example.com/private?q=1');
+    const redirect = new Response(null, {
+      status: 308,
+      headers: { Location: getHttpsRedirectLocation(url)! },
+    });
+    const hardened = hardenResponse(redirect, url, 'staging');
+    expect(hardened.status).toBe(308);
+    expect(hardened.headers.get('location')).toBe('https://example.com/private?q=1');
+    expect(hardened.headers.get('x-frame-options')).toBe('DENY');
+    expect(hardened.headers.get('content-security-policy')).toContain('upgrade-insecure-requests');
+  });
+
+  it('returns a hardened plain 500 when rendering the error page throws', async () => {
+    const locals: { errorPageFailed?: boolean } = {};
+    const view = await renderErrorPageSafely(
+      locals,
+      async () => {
+        throw new Error('render failed');
+      },
+      new URL('https://example.com/'),
+      'staging'
+    );
+
+    expect(locals.errorPageFailed).toBe(true);
+    expect(view.status).toBe(500);
+    expect(await view.text()).toBe('Internal Server Error');
+    expect(view.headers.get('x-frame-options')).toBe('DENY');
   });
 
   it('marks non-production environments as noindex', () => {

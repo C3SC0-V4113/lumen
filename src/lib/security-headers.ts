@@ -31,6 +31,10 @@ export function getRobotsTag(siteEnv: string) {
   return siteEnv === 'production' ? undefined : 'noindex, nofollow';
 }
 
+export function hasNullBodyStatus(status: number) {
+  return [101, 204, 205, 304].includes(status);
+}
+
 export function getContentSecurityPolicyHeader(hostname: string, existingPolicy?: string) {
   const directives = (existingPolicy ?? '')
     .split(';')
@@ -53,11 +57,38 @@ export function hardenResponse(response: Response, url: URL, siteEnv: string) {
       headers.get('Content-Security-Policy') ?? undefined
     )
   );
-  return new Response(response.body, {
+  return new Response(hasNullBodyStatus(response.status) ? null : response.body, {
     status: response.status,
     statusText: response.statusText,
     headers,
   });
+}
+
+export async function renderErrorPageSafely(
+  locals: { errorPageFailed?: boolean },
+  renderErrorPage: () => Promise<Response>,
+  url: URL,
+  siteEnv: string
+) {
+  if (locals.errorPageFailed) {
+    return hardenResponse(new Response('Internal Server Error', { status: 500 }), url, siteEnv);
+  }
+
+  locals.errorPageFailed = true;
+  try {
+    const errorPage = await renderErrorPage();
+    return hardenResponse(
+      new Response(errorPage.body, {
+        status: 500,
+        statusText: errorPage.statusText,
+        headers: errorPage.headers,
+      }),
+      url,
+      siteEnv
+    );
+  } catch {
+    return hardenResponse(new Response('Internal Server Error', { status: 500 }), url, siteEnv);
+  }
 }
 
 export function applySecurityHeaders(headers: Headers, protocol: string) {

@@ -1,7 +1,11 @@
 import { SITE_ENV } from 'astro:env/server';
 import { defineMiddleware } from 'astro:middleware';
 
-import { getHttpsRedirectLocation, hardenResponse } from './lib/security-headers';
+import {
+  getHttpsRedirectLocation,
+  hardenResponse,
+  renderErrorPageSafely,
+} from './lib/security-headers';
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
@@ -24,15 +28,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
       '[middleware] Request failed:',
       error instanceof Error ? error.name : 'Unknown error'
     );
-    const errorPage = await context.rewrite('/500');
-    return hardenResponse(
-      new Response(errorPage.body, {
-        status: 500,
-        statusText: errorPage.statusText,
-        headers: errorPage.headers,
-      }),
-      url,
-      SITE_ENV
-    );
+    return renderErrorPageSafely(context.locals, () => context.rewrite('/500'), url, SITE_ENV);
   }
 });
