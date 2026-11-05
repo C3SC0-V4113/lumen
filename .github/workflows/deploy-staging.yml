@@ -36,12 +36,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: 12.14.0
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24.21.0
+          node-version-file: package.json
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -49,8 +47,6 @@ jobs:
         run: pnpm run build
         env:
           CLOUDFLARE_ENV: staging
-          SITE_URL: ${{ env.STAGING_URL }}
-          SITE_ENV: staging
       - name: Apply staging D1 migrations
         run: pnpm exec wrangler d1 migrations apply lumen-staging --remote --env staging
         env:
@@ -65,11 +61,20 @@ jobs:
         run: |
           set -euo pipefail
           response="$RUNNER_TEMP/staging-headers.txt"
-          status="$(curl --silent --show-error --output /dev/null --dump-header "$response" --write-out '%{http_code}' "$STAGING_URL/")"
+          page="$RUNNER_TEMP/staging.html"
+          status=''
+          for attempt in 1 2 3 4 5; do
+            status="$(curl --silent --show-error --output "$page" --dump-header "$response" --write-out '%{http_code}' "$STAGING_URL/")" && test "$status" = '200' && break
+            sleep "$((attempt * 3))"
+          done
           test "$status" = '200'
           grep -Eiq '^strict-transport-security: max-age=63072000; includeSubDomains' "$response"
           grep -Eiq '^x-frame-options: DENY' "$response"
           grep -Eiq '^x-content-type-options: nosniff' "$response"
           grep -Eiq '^referrer-policy: strict-origin-when-cross-origin' "$response"
           grep -Eiq "^content-security-policy:.*frame-ancestors 'none'" "$response"
+          grep -Eiq '^content-security-policy:.*upgrade-insecure-requests' "$response"
           grep -Eiq '^x-robots-tag: noindex, nofollow' "$response"
+          grep -Fq "<link rel=\"canonical\" href=\"${STAGING_URL}/\"" "$page"
+          security_status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$STAGING_URL/.well-known/security.txt")"
+          test "$security_status" = '200'

@@ -4,6 +4,7 @@ name: Quality
 # prerequisite on pushes to `main`.
 on:
   pull_request:
+    types: [opened, edited, synchronize, reopened]
   workflow_call:
 
 permissions:
@@ -30,7 +31,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version-file: package.json
           cache: pnpm
 
       - name: Install dependencies
@@ -44,12 +45,21 @@ jobs:
           PR_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
+          commits="$(git rev-list "$PR_BASE..$PR_HEAD")" || { echo 'Unable to resolve PR commits' >&2; exit 1; }
+          test -n "$commits" || { echo 'No PR commits found' >&2; exit 1; }
+          if git cat-file -e "$PR_BASE:scripts/check-commit-message.sh" 2>/dev/null; then
+            git show "$PR_BASE:scripts/check-commit-message.sh" > "$RUNNER_TEMP/check-commit-message.sh"
+          else
+            cp scripts/check-commit-message.sh "$RUNNER_TEMP/check-commit-message.sh"
+          fi
           while IFS= read -r commit; do
             git show -s --format=%B "$commit" > "$RUNNER_TEMP/commit-message"
-            sh scripts/check-commit-message.sh "$RUNNER_TEMP/commit-message"
-          done < <(git rev-list "$PR_BASE..$PR_HEAD")
+            sh "$RUNNER_TEMP/check-commit-message.sh" "$RUNNER_TEMP/commit-message"
+          done <<EOF
+          $commits
+          EOF
           printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pull-request-body"
-          sh scripts/check-commit-message.sh "$RUNNER_TEMP/pull-request-body"
+          sh "$RUNNER_TEMP/check-commit-message.sh" "$RUNNER_TEMP/pull-request-body"
 
       - name: Run quality checks
         run: pnpm run check

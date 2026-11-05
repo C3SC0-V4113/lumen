@@ -9,7 +9,8 @@ the first deploy. Production Worker configuration is deferred to phase 15. Astro
 server-side `SITE_URL` and `SITE_ENV` values.
 
 Database and platform scripts: `pnpm run db:generate`, `pnpm run db:migrate:local`,
-`pnpm run db:migrate:staging` (CI only), and `pnpm run cf:typegen`. The shared audit schema and
+`pnpm run db:migrate:staging` (CI only), `pnpm run cf:typegen`, and `pnpm run cf:typecheck`.
+`pnpm run check` verifies the generated Cloudflare types are current. The shared audit schema and
 generated migrations live in `src/db/` and `migrations/`. Deploy and incident steps are in
 [`docs/runbooks/deploy.md`](docs/runbooks/deploy.md).
 
