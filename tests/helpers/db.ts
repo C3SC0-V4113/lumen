@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import Database from 'better-sqlite3';
@@ -12,12 +12,13 @@ const migrationsDirectory = join(process.cwd(), 'migrations');
 
 export function createTestDb(): { sqlite: Database.Database; db: Db } {
   const sqlite = new Database(':memory:');
-  const migrations = readdirSync(migrationsDirectory)
-    .filter((file) => file.endsWith('.sql'))
-    .sort();
+  const journal = JSON.parse(
+    readFileSync(join(migrationsDirectory, 'meta/_journal.json'), 'utf8')
+  ) as { entries: Array<{ idx: number; tag: string }> };
+  const migrations = [...journal.entries].sort((left, right) => left.idx - right.idx);
 
   for (const migration of migrations) {
-    sqlite.exec(readFileSync(join(migrationsDirectory, migration), 'utf8'));
+    sqlite.exec(readFileSync(join(migrationsDirectory, `${migration.tag}.sql`), 'utf8'));
   }
 
   const db = drizzle(sqlite, { schema });

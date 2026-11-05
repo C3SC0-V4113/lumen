@@ -21,7 +21,7 @@ describe('D1 schema migrations', () => {
       action: 'content.updated',
       entityType: 'team_member',
       entityId: 'member-1',
-      createdAt: new Date('2026-11-02T12:00:00.000Z'),
+      createdAt: new Date('2026-11-02T12:00:00.123Z'),
     });
 
     expect(await db.select().from(auditLog)).toEqual([
@@ -31,7 +31,7 @@ describe('D1 schema migrations', () => {
         action: 'content.updated',
         entityType: 'team_member',
         entityId: 'member-1',
-        createdAt: new Date('2026-11-02T12:00:00.000Z'),
+        createdAt: new Date('2026-11-02T12:00:00.123Z'),
       },
     ]);
 
