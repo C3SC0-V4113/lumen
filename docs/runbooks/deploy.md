@@ -18,9 +18,17 @@ and has `workers_dev: false` as an additional guard.
 If an authorized operator must deploy manually, use the staging environment explicitly:
 
 ```sh
+export CLOUDFLARE_ENV=staging
+pnpm run build
 pnpm exec wrangler d1 migrations apply lumen-staging --remote --env staging
 pnpm exec wrangler deploy --env staging
 ```
+
+Build before applying migrations or deploying. Astro's Cloudflare adapter writes the selected
+environment to `dist/server/wrangler.json`; Wrangler uses this redirected config when deploying
+the build. A staging build freezes staging `vars` into the Worker bundle. A local build can therefore
+deploy local `SITE_URL` and `SITE_ENV` values if it is reused for staging. Rebuild with
+`CLOUDFLARE_ENV=staging` for every manual staging deploy.
 
 The R2 binding is configured as `lumen-staging-media`; create that bucket in the account before the
 first staging deploy. Resource provisioning is not part of the workflow.

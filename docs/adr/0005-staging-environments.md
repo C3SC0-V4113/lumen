@@ -24,3 +24,8 @@ and R2 media. The account and D1/KV IDs are configured in Wrangler; R2 bucket pr
 external. A GitHub `staging`
 environment holds the Cloudflare credentials. Deploys cannot overlap, and an in-progress deploy is
 not cancelled by a later push.
+
+`vars.SITE_URL` and `vars.SITE_ENV` are the single source of truth for build-time Astro environment
+values. Astro's public server environment values are compiled into the Worker bundle, and the
+Cloudflare adapter resolves the selected Wrangler environment during `astro build`. Changing these
+vars requires rebuilding before deployment.
