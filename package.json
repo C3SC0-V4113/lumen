@@ -11,7 +11,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply lumen-local --local",
     "db:migrate:staging": "wrangler d1 migrations apply lumen-staging --remote --env staging",
-    "db:seed:sql": "vitest run tests/integration/seed-sql-artifact.test.ts --reporter=dot",
+    "db:seed:sql": "tsx scripts/seed-sql.ts",
     "db:seed:local": "pnpm run db:seed:sql && wrangler d1 execute lumen-local --local --file scripts/seed.sql > /dev/null",
     "cf:typegen": "wrangler types",
     "cf:typecheck": "wrangler types --check",
@@ -97,6 +97,7 @@
     "prettier-plugin-tailwindcss": "0.8.1",
     "react-doctor": "0.9.18",
     "shadcn": "^4.23.0",
+    "tsx": "4.23.15",
     "typescript-eslint": "8.72.1",
     "vitest": "5.0.5",
     "wrangler": "4.156.0"
