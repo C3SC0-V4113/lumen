@@ -6,7 +6,7 @@ import type { Db } from '../../../db';
 export async function getPublishedHome(db: Db, locale: Locale) {
   const result = await readLocalized(db, 'home', 'home', locale, homeSchema);
   if (!result) return null;
-  const jobs = await readLocalizedMany(db, 'job', locale, jobSchema);
+  const jobs = await readLocalizedMany(db, 'job', 'en', jobSchema);
   const hasOpenRoles = [...jobs.values()].some((job) => job.data.status === 'open');
   return {
     ...result,

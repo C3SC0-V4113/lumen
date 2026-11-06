@@ -8,6 +8,8 @@ import {
   teamMemberTranslation,
 } from '../../src/db/schema';
 import { seed } from '../../src/db/seed';
+import { readLocalized } from '../../src/features/content/server/snapshots';
+import { teamListSchema } from '../../src/features/content/shared/schemas';
 import { getPublishedGame } from '../../src/features/games/server/queries';
 import { getPublishedHome } from '../../src/features/home/server/queries';
 import { listPublishedJobs } from '../../src/features/jobs/server/queries';
@@ -42,6 +44,7 @@ describe('content snapshot seed', () => {
     expect((await getPublishedMember(db, 'pau-serra', 'es'))?.fallback).toBe(true);
     expect((await getPublishedGame(db, 'driftlight', 'en'))?.data.roadmap).toHaveLength(4);
     expect((await getPublishedGame(db, 'driftlight', 'es'))?.fallback).toBe(false);
+    expect((await getPublishedGame(db, 'driftlight', 'es'))?.stale).toBe(false);
     expect((await listPublishedJobs(db, 'en', { status: 'open' })).map((job) => job.slug)).toEqual([
       'technical-sound-designer',
     ]);
@@ -55,6 +58,41 @@ describe('content snapshot seed', () => {
     await db.update(settings).set({ stalePolicy: 'hide' }).where(eq(settings.id, 1));
     expect(await getPublishedMember(db, 'kai-moreno', 'es')).toBeNull();
     expect(await getPublishedMember(db, 'pau-serra', 'es')).toBeNull();
+  });
+
+  it('keeps seeded game and team list translations current under every policy', async () => {
+    const { db, sqlite } = createTestDb();
+    close = () => sqlite.close();
+    await seed(db);
+
+    for (const stalePolicy of ['keep', 'source', 'hide'] as const) {
+      await db.update(settings).set({ stalePolicy }).where(eq(settings.id, 1));
+      const game = await getPublishedGame(db, 'driftlight', 'es');
+      const teamList = await readLocalized(db, 'team_list', 'team', 'es', teamListSchema);
+      expect(game?.stale).toBe(false);
+      expect(game?.fallback).toBe(false);
+      expect(teamList?.stale).toBe(false);
+      expect(teamList?.fallback).toBe(false);
+    }
+  });
+
+  it('uses the same stale flag for source fallback details and lists', async () => {
+    const { db, sqlite } = createTestDb();
+    close = () => sqlite.close();
+    await seed(db);
+    await db
+      .update(settings)
+      .set({ stalePolicy: 'source', flagStale: false })
+      .where(eq(settings.id, 1));
+
+    const detail = await getPublishedMember(db, 'kai-moreno', 'es');
+    const listEntry = (await listPublishedTeam(db, 'es')).find(
+      (member) => member.slug === 'kai-moreno'
+    );
+    expect(detail?.fallback).toBe(true);
+    expect(listEntry?.fallback).toBe(true);
+    expect(detail?.stale).toBe(false);
+    expect(listEntry?.stale).toBe(false);
   });
 
   it('rejects invalid enums and foreign keys', async () => {
@@ -137,21 +175,87 @@ describe('content snapshot seed', () => {
     expect((await getPublishedHome(db, 'en'))?.data.sections).toHaveLength(5);
   });
 
+  it('shows the employment CTA from open English jobs when the Spanish snapshot is absent', async () => {
+    const { db, sqlite } = createTestDb();
+    close = () => sqlite.close();
+    await seed(db);
+    await db.update(settings).set({ stalePolicy: 'hide' }).where(eq(settings.id, 1));
+    await db
+      .delete(publishedSnapshot)
+      .where(
+        and(
+          eq(publishedSnapshot.entityType, 'job'),
+          eq(publishedSnapshot.entityId, 'technical-sound-designer'),
+          eq(publishedSnapshot.locale, 'es')
+        )
+      );
+
+    expect((await getPublishedHome(db, 'es'))?.data.sections).toHaveLength(6);
+  });
+
+  it('orders open jobs first, then by closing date and slug', async () => {
+    const { db, sqlite } = createTestDb();
+    close = () => sqlite.close();
+    await seed(db);
+    const source = await db
+      .select()
+      .from(publishedSnapshot)
+      .where(
+        and(
+          eq(publishedSnapshot.entityType, 'job'),
+          eq(publishedSnapshot.entityId, 'technical-sound-designer'),
+          eq(publishedSnapshot.locale, 'en')
+        )
+      )
+      .get();
+    if (!source) throw new Error('Missing seeded English job snapshot');
+    const sourceData = JSON.parse(source.data) as { slug: string; title: string; closesAt: number };
+    for (const [slug, closesAt] of [
+      ['open-zeta', Date.UTC(2026, 11, 15)],
+      ['open-alfa', Date.UTC(2026, 11, 15)],
+      ['open-sooner', Date.UTC(2026, 10, 15)],
+    ] as const) {
+      await db.insert(publishedSnapshot).values({
+        entityType: 'job',
+        entityId: slug,
+        locale: 'en',
+        version: 1,
+        sourceVersion: null,
+        data: JSON.stringify({ ...sourceData, slug, title: slug, closesAt }),
+        publishedAt: source.publishedAt,
+      });
+    }
+
+    expect((await listPublishedJobs(db, 'en')).map((job) => job.slug)).toEqual([
+      'open-sooner',
+      'technical-sound-designer',
+      'open-alfa',
+      'open-zeta',
+      'concept-artist',
+      'qa-tester',
+    ]);
+  });
+
   it('treats corrupt snapshots as absent', async () => {
     const { db, sqlite } = createTestDb();
     close = () => sqlite.close();
     await seed(db);
-    sqlite
-      .prepare(
-        "UPDATE published_snapshot SET data = '{' WHERE entity_type = 'game' AND entity_id = 'driftlight' AND locale = 'en'"
-      )
-      .run();
-    expect(await getPublishedGame(db, 'driftlight', 'en')).toBeNull();
-    sqlite
-      .prepare(
-        "UPDATE published_snapshot SET data = '{' WHERE entity_type = 'team_member' AND entity_id = 'kai-moreno' AND locale = 'es'"
-      )
-      .run();
+    sqlite.pragma('ignore_check_constraints = ON');
+    try {
+      sqlite
+        .prepare(
+          "UPDATE published_snapshot SET data = '{' WHERE entity_type = 'game' AND entity_id = 'driftlight' AND locale = 'en'"
+        )
+        .run();
+      expect(await getPublishedGame(db, 'driftlight', 'en')).toBeNull();
+      sqlite
+        .prepare(
+          "UPDATE published_snapshot SET data = '{' WHERE entity_type = 'team_member' AND entity_id = 'kai-moreno' AND locale = 'es'"
+        )
+        .run();
+    } finally {
+      sqlite.pragma('ignore_check_constraints = OFF');
+    }
     expect((await getPublishedMember(db, 'kai-moreno', 'es'))?.fallback).toBe(true);
   });
 });

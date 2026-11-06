@@ -163,7 +163,7 @@ export async function seed(db: Db) {
         })
         .onConflictDoNothing()
         .run();
-      await publish(db, 'game', 'driftlight', locale, 1, null, value);
+      await publish(db, 'game', 'driftlight', locale, 1, locale === 'es' ? 1 : null, value);
     })
   );
   const milestones = [
@@ -692,5 +692,5 @@ export async function seed(db: Db) {
     role: roles.get(member.slug)?.es ?? member.role,
   }));
   await publish(db, 'team_list', 'team', 'en', 1, null, { members: publicMembers });
-  await publish(db, 'team_list', 'team', 'es', 1, null, { members: spanishMembers });
+  await publish(db, 'team_list', 'team', 'es', 1, 1, { members: spanishMembers });
 }

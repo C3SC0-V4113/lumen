@@ -9,6 +9,15 @@ import type { entityTypes, locales } from '../../../db/enums';
 export type Locale = (typeof locales)[number];
 export type SnapshotType = (typeof entityTypes)[number];
 
+function translationStaleness(
+  translated: { sourceVersion: number | null } | null,
+  english: { version: number } | null,
+  flagStale: boolean
+) {
+  const outdated = !!translated && !!english && (translated.sourceVersion ?? 0) < english.version;
+  return { outdated, stale: outdated && flagStale };
+}
+
 export async function getSettings(db: Db) {
   const row = await db.select().from(settings).where(eq(settings.id, 1)).get();
   return settingsSchema.parse(
@@ -77,15 +86,15 @@ export async function readLocalized<T>(
   ]);
   const english = locale === 'en' ? selected : englishSnapshot;
   if (locale === 'en') return selected ? { ...selected, fallback: false, stale: false } : null;
-  const stale = !!selected && !!english && (selected.sourceVersion ?? 0) < english.version;
+  const { outdated, stale } = translationStaleness(selected, english, settings.flagStale);
   if (!selected)
     return settings.stalePolicy === 'hide' || !english
       ? null
       : { ...english, fallback: true, stale: false };
-  if (stale && settings.stalePolicy === 'hide') return null;
-  if (stale && settings.stalePolicy === 'source' && english)
-    return { ...english, fallback: true, stale: true };
-  return { ...selected, fallback: false, stale: stale && settings.flagStale };
+  if (outdated && settings.stalePolicy === 'hide') return null;
+  if (outdated && settings.stalePolicy === 'source' && english)
+    return { ...english, fallback: true, stale };
+  return { ...selected, fallback: false, stale };
 }
 
 export async function readLocalizedMany<T>(
@@ -115,9 +124,13 @@ export async function readLocalizedMany<T>(
   for (const id of ids) {
     const translated = requested.get(id);
     const source = english.get(id);
-    const stale = !!translated && !!source && (translated.sourceVersion ?? 0) < source.version;
-    const useSource = locale === 'es' && (!translated || (stale && policy === 'source'));
-    if (locale === 'es' && policy === 'hide' && (!translated || stale)) continue;
+    const { outdated, stale } = translationStaleness(
+      locale === 'es' ? (translated ?? null) : null,
+      source ?? null,
+      currentSettings?.flagStale ?? false
+    );
+    const useSource = locale === 'es' && (!translated || (outdated && policy === 'source'));
+    if (locale === 'es' && policy === 'hide' && (!translated || outdated)) continue;
     const row = useSource ? source : translated;
     if (!row) continue;
     try {
@@ -128,7 +141,7 @@ export async function readLocalizedMany<T>(
         version: row.version,
         sourceVersion: row.sourceVersion,
         fallback: useSource,
-        stale: stale && !!translated && (currentSettings?.flagStale ?? false),
+        stale,
       });
     } catch {
       console.error('Invalid published snapshot', {
