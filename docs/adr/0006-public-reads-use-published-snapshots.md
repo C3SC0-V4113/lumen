@@ -34,3 +34,19 @@ Rich text is a strict Tiptap JSON allowlist: `doc`, `paragraph`, `text`, and `bo
 - Snapshot schemas are shared between publication validation and read services.
 - Translation policy is evaluated per item, with a `fallback` indicator for callers.
 - Invalid snapshots are omitted and can be repaired through the CMS without exposing raw data.
+
+## Operational constraints
+
+The `stale` response flag means the translated snapshot is outdated and Settings has `flag_stale`
+enabled. Individual reads and list reads share the same calculation. An outdated translation can
+still be selected by `keep` or replaced by English under `source` while returning `stale: false`
+when that setting is disabled.
+
+`seed()` is supported only with local SQLite. It uses concurrent writes and must not be run against
+D1 staging; staging is populated by executing the SQL artifact generated from the same canonical
+seed. Public job lists sort open roles first, then by closing time (earliest first, missing dates
+last), then by slug. The published job snapshot has no `sort_order` field.
+
+`content_revision.actor_id` intentionally has no foreign key and must remain unconstrained. Revision
+history survives account deletion, and a future user table must not add a foreign key that would
+couple audit retention to user retention.
