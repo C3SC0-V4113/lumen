@@ -12,7 +12,7 @@
     "db:migrate:local": "wrangler d1 migrations apply lumen-local --local",
     "db:migrate:staging": "wrangler d1 migrations apply lumen-staging --remote --env staging",
     "db:seed:sql": "tsx scripts/seed-sql.ts",
-    "db:seed:local": "pnpm run db:seed:sql && wrangler d1 execute lumen-local --local --file scripts/seed.sql > /dev/null",
+    "db:seed:local": "pnpm run db:seed:sql && wrangler d1 execute lumen-local --local --file scripts/seed.sql",
     "cf:typegen": "wrangler types",
     "cf:typecheck": "wrangler types --check",
     "preview": "astro preview",
