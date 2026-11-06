@@ -63,10 +63,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@utility rotate-40 {
-  rotate: 40deg;
-}
-
 @theme inline {
   --font-heading: 'Fraunces Variable', Georgia, serif;
   --font-sans: 'Instrument Sans Variable', sans-serif;

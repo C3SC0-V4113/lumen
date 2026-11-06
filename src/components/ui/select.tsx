@@ -57,7 +57,7 @@ function SelectTrigger({
           ? 'h-11 min-h-11 rounded-control px-2.5 py-0'
           : 'rounded-lg py-2 pr-2 pl-2.5 data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] data-[size=touch]:min-h-11',
         variant === 'control'
-          ? 'border-control-line text-foreground forced-colors:border-[ButtonText]'
+          ? 'border-control-line text-foreground hover:bg-foreground/8 forced-colors:border-[ButtonText]'
           : 'border-input dark:bg-input/30 dark:hover:bg-input/50',
         className
       )}
