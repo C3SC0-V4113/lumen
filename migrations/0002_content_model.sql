@@ -11,7 +11,9 @@ CREATE TABLE `content_revision` (
 	`created_at` integer NOT NULL,
 	CONSTRAINT "content_revision_entity_check" CHECK(entity_type IN ('team_member', 'team_list', 'game', 'job', 'home')),
 	CONSTRAINT "content_revision_locale_check" CHECK(locale IN ('en', 'es')),
-	CONSTRAINT "content_revision_state_check" CHECK(state IN ('draft', 'review', 'approved', 'published', 'superseded'))
+	CONSTRAINT "content_revision_state_check" CHECK(state IN ('draft', 'review', 'approved', 'published', 'superseded')),
+	CONSTRAINT "content_revision_version_check" CHECK(version >= 1),
+	CONSTRAINT "content_revision_data_json_check" CHECK(json_valid(data))
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `content_revision_version_unique` ON `content_revision` (`entity_type`,`entity_id`,`locale`,`version`);--> statement-breakpoint
@@ -57,6 +59,7 @@ CREATE TABLE `home_section` (
 	FOREIGN KEY (`page_id`) REFERENCES `page`(`id`) ON UPDATE no action ON DELETE cascade,
 	CONSTRAINT "home_section_kind_check" CHECK(kind IN ('hero', 'grid', 'team', 'steps', 'cta', 'form')),
 	CONSTRAINT "home_section_animation_check" CHECK(animation IN ('fade_up', 'none')),
+	CONSTRAINT "home_section_hidden_check" CHECK(hidden IN (0, 1)),
 	CONSTRAINT "home_section_bg_light_check" CHECK(bg_light IS NULL OR bg_light IN ('paper', 'card', 'sand', 'lamp', 'night_band')),
 	CONSTRAINT "home_section_bg_dark_check" CHECK(bg_dark IS NULL OR bg_dark IN ('night', 'deep_sea', 'card', 'ember', 'cream_band')),
 	CONSTRAINT "home_section_fg_light_check" CHECK(fg_light IS NULL OR fg_light IN ('auto', 'ink', 'slate', 'toasted_amber', 'sea_teal', 'cream', 'mist', 'amber', 'glow_teal')),
@@ -105,7 +108,8 @@ CREATE TABLE `job` (
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
 	CONSTRAINT "job_discipline_check" CHECK(discipline IN ('art', 'code', 'design', 'sound', 'production')),
-	CONSTRAINT "job_status_check" CHECK(status IN ('draft', 'open', 'closed', 'filled'))
+	CONSTRAINT "job_status_check" CHECK(status IN ('draft', 'open', 'closed', 'filled')),
+	CONSTRAINT "job_applicants_count_check" CHECK(applicants_count IS NULL OR applicants_count >= 0)
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `job_slug_unique` ON `job` (`slug`);--> statement-breakpoint
@@ -132,6 +136,7 @@ CREATE TABLE `media_asset` (
 	`height` integer,
 	`sha256` text NOT NULL,
 	`created_at` integer NOT NULL,
+	CONSTRAINT "media_asset_bytes_check" CHECK(bytes > 0),
 	CONSTRAINT "media_asset_kind_check" CHECK(kind IN ('key_art', 'screenshot', 'photo', 'portrait', 'logo')),
 	CONSTRAINT "media_asset_dimensions_check" CHECK((width IS NULL AND height IS NULL) OR (width > 0 AND height > 0))
 );
@@ -223,7 +228,9 @@ CREATE TABLE `published_snapshot` (
 	`published_at` integer NOT NULL,
 	PRIMARY KEY(`entity_type`, `entity_id`, `locale`),
 	CONSTRAINT "published_snapshot_entity_check" CHECK(entity_type IN ('team_member', 'team_list', 'game', 'job', 'home')),
-	CONSTRAINT "published_snapshot_locale_check" CHECK(locale IN ('en', 'es'))
+	CONSTRAINT "published_snapshot_locale_check" CHECK(locale IN ('en', 'es')),
+	CONSTRAINT "published_snapshot_version_check" CHECK(version >= 1),
+	CONSTRAINT "published_snapshot_data_json_check" CHECK(json_valid(data))
 );
 --> statement-breakpoint
 CREATE INDEX `published_snapshot_locale_type_idx` ON `published_snapshot` (`locale`,`entity_type`);--> statement-breakpoint
@@ -258,6 +265,8 @@ CREATE TABLE `settings` (
 	`contact_email` text NOT NULL,
 	`updated_at` integer NOT NULL,
 	CONSTRAINT "settings_singleton_check" CHECK(id = 1),
+	CONSTRAINT "settings_flag_stale_check" CHECK(flag_stale IN (0, 1)),
+	CONSTRAINT "settings_require_review_check" CHECK(require_review IN (0, 1)),
 	CONSTRAINT "settings_stale_policy_check" CHECK(stale_policy IN ('keep', 'source', 'hide')),
 	CONSTRAINT "settings_approvers_check" CHECK(approvers IN ('editors_and_admins', 'admins'))
 );
@@ -291,7 +300,8 @@ CREATE TABLE `team_link` (
 	`url` text NOT NULL,
 	`year` integer,
 	FOREIGN KEY (`member_id`) REFERENCES `team_member`(`id`) ON UPDATE no action ON DELETE cascade,
-	CONSTRAINT "team_link_kind_check" CHECK(kind IN ('talk', 'interview', 'portfolio', 'social'))
+	CONSTRAINT "team_link_kind_check" CHECK(kind IN ('talk', 'interview', 'portfolio', 'social')),
+	CONSTRAINT "team_link_year_check" CHECK(year IS NULL OR year BETWEEN 1900 AND 2100)
 );
 --> statement-breakpoint
 CREATE INDEX `team_link_member_order_idx` ON `team_link` (`member_id`,`sort_order`);--> statement-breakpoint

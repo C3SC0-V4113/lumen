@@ -19,15 +19,8 @@
     {
       "idx": 2,
       "version": "6",
-      "when": 1793975969525,
+      "when": 1794009380049,
       "tag": "0002_content_model",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1794008496572,
-      "tag": "0003_content_integrity",
       "breakpoints": true
     }
   ]

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4229e8fd-2008-4ba3-ba62-c2883e3ca39a",
+  "id": "d927ce15-27a9-482f-9d04-71ab6ce2cafa",
   "prevId": "76a10f49-5b5a-46fa-8a79-3905a8347bce",
   "tables": {
     "audit_log": {
@@ -168,6 +168,14 @@
         "content_revision_state_check": {
           "name": "content_revision_state_check",
           "value": "state IN ('draft', 'review', 'approved', 'published', 'superseded')"
+        },
+        "content_revision_version_check": {
+          "name": "content_revision_version_check",
+          "value": "version >= 1"
+        },
+        "content_revision_data_json_check": {
+          "name": "content_revision_data_json_check",
+          "value": "json_valid(data)"
         }
       }
     },
@@ -434,6 +442,10 @@
         "home_section_animation_check": {
           "name": "home_section_animation_check",
           "value": "animation IN ('fade_up', 'none')"
+        },
+        "home_section_hidden_check": {
+          "name": "home_section_hidden_check",
+          "value": "hidden IN (0, 1)"
         },
         "home_section_bg_light_check": {
           "name": "home_section_bg_light_check",
@@ -725,6 +737,10 @@
         "job_status_check": {
           "name": "job_status_check",
           "value": "status IN ('draft', 'open', 'closed', 'filled')"
+        },
+        "job_applicants_count_check": {
+          "name": "job_applicants_count_check",
+          "value": "applicants_count IS NULL OR applicants_count >= 0"
         }
       }
     },
@@ -871,6 +887,10 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {
+        "media_asset_bytes_check": {
+          "name": "media_asset_bytes_check",
+          "value": "bytes > 0"
+        },
         "media_asset_kind_check": {
           "name": "media_asset_kind_check",
           "value": "kind IN ('key_art', 'screenshot', 'photo', 'portrait', 'logo')"
@@ -1379,6 +1399,14 @@
         "published_snapshot_locale_check": {
           "name": "published_snapshot_locale_check",
           "value": "locale IN ('en', 'es')"
+        },
+        "published_snapshot_version_check": {
+          "name": "published_snapshot_version_check",
+          "value": "version >= 1"
+        },
+        "published_snapshot_data_json_check": {
+          "name": "published_snapshot_data_json_check",
+          "value": "json_valid(data)"
         }
       }
     },
@@ -1574,6 +1602,14 @@
         "settings_singleton_check": {
           "name": "settings_singleton_check",
           "value": "id = 1"
+        },
+        "settings_flag_stale_check": {
+          "name": "settings_flag_stale_check",
+          "value": "flag_stale IN (0, 1)"
+        },
+        "settings_require_review_check": {
+          "name": "settings_require_review_check",
+          "value": "require_review IN (0, 1)"
         },
         "settings_stale_policy_check": {
           "name": "settings_stale_policy_check",
@@ -1781,6 +1817,10 @@
         "team_link_kind_check": {
           "name": "team_link_kind_check",
           "value": "kind IN ('talk', 'interview', 'portfolio', 'social')"
+        },
+        "team_link_year_check": {
+          "name": "team_link_year_check",
+          "value": "year IS NULL OR year BETWEEN 1900 AND 2100"
         }
       }
     },

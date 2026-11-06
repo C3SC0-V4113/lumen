@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import Database from 'better-sqlite3';
@@ -32,39 +32,57 @@ describe('SQLite migrations', () => {
     }
   });
 
-  it('preserves dependent rows while applying the integrity migration', () => {
-    const sqlite = new Database(':memory:');
-    sqlite.pragma('foreign_keys = ON');
-    const root = process.cwd();
-    const journal = JSON.parse(
-      readFileSync(join(root, 'migrations/meta/_journal.json'), 'utf8')
-    ) as { entries: Array<{ idx: number; tag: string }> };
+  it('rejects post-0002 migrations that drop tables referenced by foreign keys', () => {
+    const migrationFiles = readdirSync(join(process.cwd(), 'migrations'))
+      .filter((file) => /^\d+.*\.sql$/.test(file))
+      .sort()
+      .map((file) => ({
+        file,
+        sql: readFileSync(join(process.cwd(), 'migrations', file), 'utf8'),
+      }));
+    const unsafeDrops = findUnsafeForeignKeyDrops(migrationFiles);
 
-    try {
-      for (const migration of journal.entries.filter(({ idx }) => idx < 3)) {
-        sqlite.exec(readFileSync(join(root, `migrations/${migration.tag}.sql`), 'utf8'));
-      }
-      sqlite.exec(
-        "INSERT INTO page (id, slug, kind) VALUES ('migration-test-page', 'migration-test', 'sections')"
+    if (unsafeDrops.length > 0) {
+      throw new Error(
+        [
+          `Unsafe D1 migration table rebuild: ${unsafeDrops.join(', ')}.`,
+          'D1 runs migrations transactionally, so PRAGMA foreign_keys=OFF is ignored and DROP TABLE executes CASCADE/SET NULL actions.',
+          'Write the migration manually and preserve/restore child tables, or avoid rebuilding the referenced table.',
+        ].join(' ')
       );
-      sqlite.exec(
-        "INSERT INTO home_section (id, page_id, kind, sort_order, hidden, animation) VALUES ('migration-test-section', 'migration-test-page', 'hero', 0, 0, 'none')"
-      );
-      sqlite.exec(
-        "INSERT INTO home_section_item (id, section_id, sort_order) VALUES ('migration-test-item', 'migration-test-section', 0)"
-      );
-      const integrityMigration = journal.entries.find(({ idx }) => idx === 3);
-      if (!integrityMigration) throw new Error('Missing integrity migration');
-      sqlite.exec(readFileSync(join(root, `migrations/${integrityMigration.tag}.sql`), 'utf8'));
-
-      expect(
-        sqlite
-          .prepare("SELECT section_id FROM home_section_item WHERE id = 'migration-test-item'")
-          .get()
-      ).toEqual({ section_id: 'migration-test-section' });
-      expect(sqlite.pragma('foreign_key_check')).toEqual([]);
-    } finally {
-      sqlite.close();
     }
+    expect(unsafeDrops).toEqual([]);
+  });
+
+  it('detects a referenced-table drop in a migration after 0002', () => {
+    expect(
+      findUnsafeForeignKeyDrops([
+        {
+          file: '0002_content_model.sql',
+          sql: 'CREATE TABLE child (parent_id TEXT REFERENCES parent(id));',
+        },
+        { file: '0003_unsafe_rebuild.sql', sql: 'DROP TABLE parent;' },
+      ])
+    ).toEqual(['0003_unsafe_rebuild.sql drops referenced table parent']);
   });
 });
+
+function findUnsafeForeignKeyDrops(migrations: Array<{ file: string; sql: string }>) {
+  const referencedTables = new Set<string>();
+  for (const migration of migrations) {
+    for (const match of migration.sql.matchAll(/\bREFERENCES\s+[`"]?([A-Za-z_]\w*)[`"]?\s*\(/gi)) {
+      referencedTables.add(match[1].toLowerCase());
+    }
+  }
+
+  return migrations.flatMap((migration) => {
+    const version = Number(migration.file.match(/^(\d+)/)?.[1] ?? 0);
+    if (version <= 2) return [];
+    return [
+      ...migration.sql.matchAll(/\bDROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?[`"]?([A-Za-z_]\w*)[`"]?/gi),
+    ]
+      .map((match) => match[1].toLowerCase())
+      .filter((table) => referencedTables.has(table))
+      .map((table) => `${migration.file} drops referenced table ${table}`);
+  });
+}
