@@ -56,7 +56,11 @@ CREATE TABLE `home_section` (
 	`fg_dark` text,
 	FOREIGN KEY (`page_id`) REFERENCES `page`(`id`) ON UPDATE no action ON DELETE cascade,
 	CONSTRAINT "home_section_kind_check" CHECK(kind IN ('hero', 'grid', 'team', 'steps', 'cta', 'form')),
-	CONSTRAINT "home_section_animation_check" CHECK(animation IN ('fade_up', 'none'))
+	CONSTRAINT "home_section_animation_check" CHECK(animation IN ('fade_up', 'none')),
+	CONSTRAINT "home_section_bg_light_check" CHECK(bg_light IS NULL OR bg_light IN ('paper', 'card', 'sand', 'lamp', 'night_band')),
+	CONSTRAINT "home_section_bg_dark_check" CHECK(bg_dark IS NULL OR bg_dark IN ('night', 'deep_sea', 'card', 'ember', 'cream_band')),
+	CONSTRAINT "home_section_fg_light_check" CHECK(fg_light IS NULL OR fg_light IN ('auto', 'ink', 'slate', 'toasted_amber', 'sea_teal', 'cream', 'mist', 'amber', 'glow_teal')),
+	CONSTRAINT "home_section_fg_dark_check" CHECK(fg_dark IS NULL OR fg_dark IN ('auto', 'ink', 'slate', 'toasted_amber', 'sea_teal', 'cream', 'mist', 'amber', 'glow_teal'))
 );
 --> statement-breakpoint
 CREATE INDEX `home_section_page_order_idx` ON `home_section` (`page_id`,`sort_order`);--> statement-breakpoint
@@ -129,7 +133,7 @@ CREATE TABLE `media_asset` (
 	`sha256` text NOT NULL,
 	`created_at` integer NOT NULL,
 	CONSTRAINT "media_asset_kind_check" CHECK(kind IN ('key_art', 'screenshot', 'photo', 'portrait', 'logo')),
-	CONSTRAINT "media_asset_dimensions_check" CHECK(width IS NULL OR (width > 0 AND height > 0))
+	CONSTRAINT "media_asset_dimensions_check" CHECK((width IS NULL AND height IS NULL) OR (width > 0 AND height > 0))
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `media_asset_r2_key_unique` ON `media_asset` (`r2_key`);--> statement-breakpoint
@@ -164,6 +168,7 @@ CREATE TABLE `newsletter_subscriber` (
 	`locale` text NOT NULL,
 	`consent_version` text NOT NULL,
 	`created_at` integer NOT NULL,
+	CONSTRAINT "newsletter_email_normalized_check" CHECK(email = lower(trim(email))),
 	CONSTRAINT "newsletter_locale_check" CHECK(locale IN ('en', 'es'))
 );
 --> statement-breakpoint
@@ -184,7 +189,7 @@ CREATE TABLE `press_kit` (
 	`zip_bytes` integer,
 	`built_at` integer,
 	`status` text NOT NULL,
-	CONSTRAINT "press_kit_singleton_check" CHECK("press_kit"."id" = 1),
+	CONSTRAINT "press_kit_singleton_check" CHECK(id = 1),
 	CONSTRAINT "press_kit_status_check" CHECK(status IN ('idle', 'building', 'ready', 'failed'))
 );
 --> statement-breakpoint
@@ -252,7 +257,7 @@ CREATE TABLE `settings` (
 	`press_email` text NOT NULL,
 	`contact_email` text NOT NULL,
 	`updated_at` integer NOT NULL,
-	CONSTRAINT "settings_singleton_check" CHECK("settings"."id" = 1),
+	CONSTRAINT "settings_singleton_check" CHECK(id = 1),
 	CONSTRAINT "settings_stale_policy_check" CHECK(stale_policy IN ('keep', 'source', 'hide')),
 	CONSTRAINT "settings_approvers_check" CHECK(approvers IN ('editors_and_admins', 'admins'))
 );

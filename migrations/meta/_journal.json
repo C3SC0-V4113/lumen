@@ -19,29 +19,8 @@
     {
       "idx": 2,
       "version": "6",
-      "when": 1793940455962,
-      "tag": "0002_chilly_ben_urich",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1793940845220,
-      "tag": "0003_old_selene",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1793941205789,
-      "tag": "0004_fantastic_toad_men",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1793942647083,
-      "tag": "0005_short_titania",
+      "when": 1793975969525,
+      "tag": "0002_content_model",
       "breakpoints": true
     }
   ]

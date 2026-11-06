@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3ae09ea2-dfbe-4204-b9f1-a8b7c6175e38",
+  "id": "4229e8fd-2008-4ba3-ba62-c2883e3ca39a",
   "prevId": "76a10f49-5b5a-46fa-8a79-3905a8347bce",
   "tables": {
     "audit_log": {
@@ -434,6 +434,22 @@
         "home_section_animation_check": {
           "name": "home_section_animation_check",
           "value": "animation IN ('fade_up', 'none')"
+        },
+        "home_section_bg_light_check": {
+          "name": "home_section_bg_light_check",
+          "value": "bg_light IS NULL OR bg_light IN ('paper', 'card', 'sand', 'lamp', 'night_band')"
+        },
+        "home_section_bg_dark_check": {
+          "name": "home_section_bg_dark_check",
+          "value": "bg_dark IS NULL OR bg_dark IN ('night', 'deep_sea', 'card', 'ember', 'cream_band')"
+        },
+        "home_section_fg_light_check": {
+          "name": "home_section_fg_light_check",
+          "value": "fg_light IS NULL OR fg_light IN ('auto', 'ink', 'slate', 'toasted_amber', 'sea_teal', 'cream', 'mist', 'amber', 'glow_teal')"
+        },
+        "home_section_fg_dark_check": {
+          "name": "home_section_fg_dark_check",
+          "value": "fg_dark IS NULL OR fg_dark IN ('auto', 'ink', 'slate', 'toasted_amber', 'sea_teal', 'cream', 'mist', 'amber', 'glow_teal')"
         }
       }
     },
@@ -861,7 +877,7 @@
         },
         "media_asset_dimensions_check": {
           "name": "media_asset_dimensions_check",
-          "value": "width IS NULL OR (width > 0 AND height > 0)"
+          "value": "(width IS NULL AND height IS NULL) OR (width > 0 AND height > 0)"
         }
       }
     },
@@ -1061,6 +1077,10 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {
+        "newsletter_email_normalized_check": {
+          "name": "newsletter_email_normalized_check",
+          "value": "email = lower(trim(email))"
+        },
         "newsletter_locale_check": {
           "name": "newsletter_locale_check",
           "value": "locale IN ('en', 'es')"
@@ -1162,7 +1182,7 @@
       "checkConstraints": {
         "press_kit_singleton_check": {
           "name": "press_kit_singleton_check",
-          "value": "\"press_kit\".\"id\" = 1"
+          "value": "id = 1"
         },
         "press_kit_status_check": {
           "name": "press_kit_status_check",
@@ -1553,7 +1573,7 @@
       "checkConstraints": {
         "settings_singleton_check": {
           "name": "settings_singleton_check",
-          "value": "\"settings\".\"id\" = 1"
+          "value": "id = 1"
         },
         "settings_stale_policy_check": {
           "name": "settings_stale_policy_check",

@@ -460,7 +460,7 @@ export const settings = sqliteTable(
     updatedAt: ms('updated_at').notNull(),
   },
   (t) => [
-    check('settings_singleton_check', sql`${t.id} = 1`),
+    check('settings_singleton_check', sql`id = 1`),
     enumCheck('settings_stale_policy_check', t.stalePolicy, 'stalePolicy'),
     enumCheck('settings_approvers_check', t.approvers, 'approverPolicy'),
   ]
@@ -476,7 +476,7 @@ export const pressKit = sqliteTable(
     status: enumText('status', 'pressKitState').notNull(),
   },
   (t) => [
-    check('press_kit_singleton_check', sql`${t.id} = 1`),
+    check('press_kit_singleton_check', sql`id = 1`),
     enumCheck('press_kit_status_check', t.status, 'pressKitState'),
   ]
 );
@@ -500,7 +500,7 @@ export const newsletterSubscriber = sqliteTable(
     createdAt: ms('created_at').notNull(),
   },
   (t) => [
-    check('newsletter_email_normalized_check', sql`${t.email} = lower(trim(${t.email}))`),
+    check('newsletter_email_normalized_check', sql`email = lower(trim(email))`),
     uniqueIndex('newsletter_email_unique').on(t.email),
     enumCheck('newsletter_locale_check', t.locale, 'locale'),
     index('newsletter_created_idx').on(t.createdAt),
