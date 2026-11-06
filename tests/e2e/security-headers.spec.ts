@@ -93,6 +93,19 @@ test('does not report CSP violations on localized pages or 404', async ({ page }
   expect(policy).not.toMatch(/style-src-attr[^;]*'unsafe-inline'/);
   expect(policy).not.toContain('unpkg.com');
   await expect(page.locator('script[src*="unpkg.com"]')).toHaveCount(0);
+
+  const language = page.getByRole('combobox', { name: 'Language' });
+  await language.click();
+  await expect(page.getByRole('listbox')).toBeVisible();
+  await page.keyboard.press('Escape');
+  const themeToggle = page.getByRole('button', { name: 'Dark theme' });
+  await expect(themeToggle).toHaveAttribute('aria-pressed', 'true');
+  await themeToggle.click();
+  await expect(themeToggle).toHaveAttribute('aria-pressed', 'false');
+  const interactionViolations = await page.evaluate(
+    () => (window as Window & { __cspViolations?: unknown[] }).__cspViolations ?? []
+  );
+  expect(interactionViolations).toEqual([]);
 });
 
 test('CSP hashes the rendered theme script and Base UI inline styles', async ({ page }) => {
