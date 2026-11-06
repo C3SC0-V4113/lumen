@@ -47,7 +47,3 @@ export const enumSql = {
   darkBackground: darkBackgrounds,
   textColor: textColors,
 } as const;
-
-export function enumCheck(column: string, values: readonly string[]) {
-  return `${column} IN (${values.map((value) => `'${value}'`).join(', ')})`;
-}

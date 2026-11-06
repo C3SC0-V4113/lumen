@@ -56,6 +56,7 @@ export const mediaAsset = sqliteTable(
     createdAt: ms('created_at').notNull(),
   },
   (t) => [
+    check('media_asset_bytes_check', sql`bytes > 0`),
     enumCheck('media_asset_kind_check', t.kind, 'mediaKind'),
     check(
       'media_asset_dimensions_check',
@@ -218,6 +219,7 @@ export const teamLink = sqliteTable(
   },
   (t) => [
     enumCheck('team_link_kind_check', t.kind, 'linkKind'),
+    check('team_link_year_check', sql`year IS NULL OR year BETWEEN 1900 AND 2100`),
     index('team_link_member_order_idx').on(t.memberId, t.sortOrder),
   ]
 );
@@ -286,6 +288,7 @@ export const job = sqliteTable(
   (t) => [
     enumCheck('job_discipline_check', t.discipline, 'discipline'),
     enumCheck('job_status_check', t.status, 'jobState'),
+    check('job_applicants_count_check', sql`applicants_count IS NULL OR applicants_count >= 0`),
     index('job_status_discipline_idx').on(t.status, t.discipline),
     index('job_closes_at_idx').on(t.closesAt),
   ]
@@ -335,6 +338,7 @@ export const homeSection = sqliteTable(
   (t) => [
     enumCheck('home_section_kind_check', t.kind, 'sectionKind'),
     enumCheck('home_section_animation_check', t.animation, 'animation'),
+    check('home_section_hidden_check', sql`hidden IN (0, 1)`),
     nullableEnumCheck('home_section_bg_light_check', t.bgLight, 'lightBackground'),
     nullableEnumCheck('home_section_bg_dark_check', t.bgDark, 'darkBackground'),
     nullableEnumCheck('home_section_fg_light_check', t.fgLight, 'textColor'),
@@ -402,6 +406,8 @@ export const contentRevision = sqliteTable(
     enumCheck('content_revision_entity_check', t.entityType, 'entityType'),
     enumCheck('content_revision_locale_check', t.locale, 'locale'),
     enumCheck('content_revision_state_check', t.state, 'revisionState'),
+    check('content_revision_version_check', sql`version >= 1`),
+    check('content_revision_data_json_check', sql`json_valid(data)`),
     uniqueIndex('content_revision_version_unique').on(
       t.entityType,
       t.entityId,
@@ -426,6 +432,8 @@ export const publishedSnapshot = sqliteTable(
     primaryKey({ columns: [t.entityType, t.entityId, t.locale] }),
     enumCheck('published_snapshot_entity_check', t.entityType, 'entityType'),
     enumCheck('published_snapshot_locale_check', t.locale, 'locale'),
+    check('published_snapshot_version_check', sql`version >= 1`),
+    check('published_snapshot_data_json_check', sql`json_valid(data)`),
     index('published_snapshot_locale_type_idx').on(t.locale, t.entityType),
   ]
 );
@@ -461,6 +469,8 @@ export const settings = sqliteTable(
   },
   (t) => [
     check('settings_singleton_check', sql`id = 1`),
+    check('settings_flag_stale_check', sql`flag_stale IN (0, 1)`),
+    check('settings_require_review_check', sql`require_review IN (0, 1)`),
     enumCheck('settings_stale_policy_check', t.stalePolicy, 'stalePolicy'),
     enumCheck('settings_approvers_check', t.approvers, 'approverPolicy'),
   ]
