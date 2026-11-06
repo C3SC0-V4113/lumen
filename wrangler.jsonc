@@ -1,0 +1,39 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "account_id": "539d7e5b074ad9cab407006147a43b4c",
+  "name": "lumen-local",
+  "compatibility_date": "2026-10-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "vars": { "SITE_URL": "http://127.0.0.1:4174", "SITE_ENV": "local" },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lumen-local",
+      "database_id": "11111111-1111-4111-8111-111111111111",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "assets": { "directory": "./dist", "binding": "ASSETS" },
+  "env": {
+    "staging": {
+      "name": "lumen-staging",
+      "workers_dev": true,
+      "vars": {
+        "SITE_URL": "https://lumen-staging.cescovalledev.workers.dev",
+        "SITE_ENV": "staging",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "lumen-staging",
+          "database_id": "c355ebcb-300a-410a-a876-7f3815314aea",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "kv_namespaces": [{ "binding": "SESSION_KV", "id": "d82373a48f5e4a0fb2b05250468ae0f3" }],
+      "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "lumen-staging-media" }],
+    },
+  },
+}

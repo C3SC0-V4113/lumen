@@ -1,5 +1,19 @@
 # Lumen
 
+## Platform setup
+
+The site targets Cloudflare Workers. Local development and D1 migrations use `lumen-local`; E2E
+preview listens on port `4174`. The `lumen-staging` Worker, D1 and KV IDs are configured in
+`wrangler.jsonc` and staging deploys run only in CI. Its R2 bucket remains to be provisioned before
+the first deploy. Production Worker configuration is deferred to phase 15. Astro validates the
+server-side `SITE_URL` and `SITE_ENV` values.
+
+Database and platform scripts: `pnpm run db:generate`, `pnpm run db:migrate:local`,
+`pnpm run db:migrate:staging` (CI only), `pnpm run cf:typegen`, and `pnpm run cf:typecheck`.
+`pnpm run check` verifies the generated Cloudflare types are current. The shared audit schema and
+generated migrations live in `src/db/` and `migrations/`. Deploy and incident steps are in
+[`docs/runbooks/deploy.md`](docs/runbooks/deploy.md).
+
 Lumen is the foundation for an independent game studio website and private content management
 system. This phase establishes shared visual tokens, accessible shadcn components, English and
 Spanish localization, and persistent theme preferences. Public pages use Astro server rendering;

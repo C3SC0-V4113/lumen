@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const baseUrl = 'http://127.0.0.1:3000';
+const baseUrl = 'http://127.0.0.1:4174';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -19,8 +19,9 @@ export default defineConfig({
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {
-    command: 'pnpm run build && pnpm exec astro preview --ignore-lock --host 127.0.0.1 --port 3000',
-    url: 'http://127.0.0.1:3000',
+    command:
+      'pnpm run db:migrate:local && pnpm run build && pnpm exec astro preview --ignore-lock --host 127.0.0.1 --port 4174',
+    url: 'http://127.0.0.1:4174',
     reuseExistingServer: false,
     timeout: 120_000,
   },
