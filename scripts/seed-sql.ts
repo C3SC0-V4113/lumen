@@ -9,6 +9,63 @@ import { seed } from '../src/db/seed';
 
 import type { Db } from '../src/db';
 
+function serializeParameter(value: unknown, index: number): string {
+  if (value === null) return 'NULL';
+  if (typeof value === 'boolean') return value ? '1' : '0';
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      throw new Error(`Seed SQL parameter ${index + 1} must be a finite number`);
+    }
+    return String(value);
+  }
+  if (typeof value === 'string') return `'${value.replaceAll("'", "''")}'`;
+  throw new Error(`Unsupported seed SQL parameter ${index + 1}: ${typeof value}`);
+}
+
+export function serializeSeedQuery(query: string, params: unknown[]): string {
+  let statement = '';
+  let parameterIndex = 0;
+  let closingQuote: string | null = null;
+
+  for (let index = 0; index < query.length; index += 1) {
+    const character = query[index];
+    if (closingQuote) {
+      statement += character;
+      if (character === closingQuote) {
+        if (query[index + 1] === closingQuote) {
+          statement += query[index + 1];
+          index += 1;
+        } else {
+          closingQuote = null;
+        }
+      }
+      continue;
+    }
+
+    if (character === "'" || character === '"' || character === '`' || character === '[') {
+      closingQuote = character === '[' ? ']' : character;
+      statement += character;
+      continue;
+    }
+    if (character !== '?') {
+      statement += character;
+      continue;
+    }
+    if (parameterIndex >= params.length) {
+      throw new Error('Seed SQL query has more placeholders than parameters');
+    }
+    statement += serializeParameter(params[parameterIndex], parameterIndex);
+    parameterIndex += 1;
+  }
+
+  if (parameterIndex !== params.length) {
+    throw new Error(
+      `Seed SQL query has ${parameterIndex} placeholders for ${params.length} parameters; literal question marks are unsupported`
+    );
+  }
+  return statement;
+}
+
 export async function generateSeedSql(): Promise<string> {
   const sqlite = new Database(':memory:');
   sqlite.pragma('foreign_keys = ON');
@@ -25,21 +82,7 @@ export async function generateSeedSql(): Promise<string> {
       schema,
       logger: {
         logQuery(query, params) {
-          const placeholders = query.match(/\?/g)?.length ?? 0;
-          if (placeholders !== params.length) {
-            throw new Error(
-              `Seed SQL query has ${placeholders} question marks for ${params.length} parameters; literal question marks are unsupported`
-            );
-          }
-          let index = 0;
-          const statement = query.replace(/\?/g, () => {
-            const value = params[index++];
-            if (value === null || value === undefined) return 'NULL';
-            if (typeof value === 'number') return String(value);
-            if (typeof value === 'boolean') return value ? '1' : '0';
-            return `'${String(value).replaceAll("'", "''")}'`;
-          });
-          statements.push(statement);
+          statements.push(serializeSeedQuery(query, params));
         },
       },
     });
