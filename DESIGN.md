@@ -15,8 +15,11 @@ This file is the source of truth for the shared public site and CMS interface.
 - All colors live in `src/styles/global.css` as `oklch()` tokens. Add new colors there in OKLCH;
   do not introduce hex, RGB, or HSL color values.
 - The contrast suite checks selected text pairs against WCAG AA (4.5:1) and input boundaries against
-  the 3:1 non-text threshold across each surface palette. It does not claim coverage of every possible
-  token combination.
+  the 3:1 non-text threshold across each surface palette. Preference-control borders use
+  `--control-line`, which aliases the surface's `--input` token because the design's 26% foreground
+  mix measures 1.72:1 in light palettes and up to 2.13:1 in dark palettes. `--control-line` measures
+  at least 3.63:1 against the page background and 3.85:1 against the card background in all four
+  surface palettes. The test does not claim coverage of every possible token combination.
 
 ## Typography
 
@@ -32,6 +35,7 @@ The fonts are self-hosted with Fontsource. Do not add Google Fonts or external f
 
 - Base radius is `0.625rem` (10px). Use Tailwind radius utilities; public pills use `rounded-full`.
 - Public interactive controls use the `touch` size, with a minimum 44px target.
+- Compact header preference controls use the `control` radius (12px) and a 44px target.
 - Keep layouts calm and readable, with explicit loading, empty, error, and partial-data states.
 - Use shadcn primitives before custom markup. Product-owned reusable compositions belong in
   `src/components/common/`; feature components belong in their feature folder.

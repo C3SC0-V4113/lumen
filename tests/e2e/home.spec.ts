@@ -45,19 +45,32 @@ test('renders localized home pages, preserves URL parts, and persists the theme'
 
   await page.goto('/?source=header#preferences');
   await waitForPreferencesHydration(page);
+  const languageControl = page.getByRole('combobox', { name: 'Language' });
+  const themeControl = page.getByRole('button', { name: 'Dark theme' });
+  await expect(languageControl).toHaveCSS('height', '44px');
+  await expect(languageControl).toHaveCSS('border-radius', '12px');
+  await expect(themeControl).toHaveCSS('width', '44px');
+  await expect(themeControl).toHaveCSS('height', '44px');
+  await expect(themeControl).toHaveCSS('border-radius', '12px');
   await page.keyboard.press('Tab');
   const skipLink = page.getByRole('link', { name: 'Skip to content' });
   await expect(skipLink).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('main')).toBeFocused();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(languageControl.locator('[data-slot="select-value"]')).toHaveText('EN');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Stories for curious minds.');
   await expect(page.locator('html')).toHaveClass(/dark/);
 
   const themeToggle = page.getByRole('button', { name: 'Dark theme', pressed: true });
+  await expect(themeToggle).toHaveAttribute('aria-pressed', 'true');
   await themeToggle.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('html')).not.toHaveClass(/dark/);
+  await expect(page.getByRole('button', { name: 'Dark theme' })).toHaveAttribute(
+    'aria-pressed',
+    'false'
+  );
   await page.reload();
   await waitForPreferencesHydration(page);
   await expect(page.locator('html')).not.toHaveClass(/dark/);
@@ -72,6 +85,9 @@ test('renders localized home pages, preserves URL parts, and persists the theme'
   await page.getByRole('option', { name: 'Español' }).click();
   await expect(page).toHaveURL(/\/es\?source=header#preferences$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+  await expect(
+    page.getByRole('combobox', { name: 'Idioma' }).locator('[data-slot="select-value"]')
+  ).toHaveText('ES');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Historias para mentes curiosas.'
   );
