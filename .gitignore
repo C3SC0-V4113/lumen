@@ -26,5 +26,6 @@ playwright-report/
 test-results/
 blob-report/
 .wrangler/
+scripts/seed.sql
 .dev.vars
 worker-configuration.d.ts
