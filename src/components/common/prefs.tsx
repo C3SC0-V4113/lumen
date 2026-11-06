@@ -52,7 +52,7 @@ export default function Prefs({ lang, surface }: Props) {
     >
       <Select value={lang} onValueChange={changeLocale}>
         <SelectTrigger
-          aria-label={t(lang, 'preferences.language')}
+          aria-label={`${t(lang, 'preferences.language')}: ${lang.toUpperCase()}`}
           size="control"
           variant="control"
         >
@@ -79,7 +79,7 @@ export default function Prefs({ lang, surface }: Props) {
           <Sun
             aria-hidden="true"
             className={cn(
-              'absolute size-5 transition duration-300 ease-in-out motion-reduce:transform-none motion-reduce:filter-none motion-reduce:duration-100',
+              'absolute size-5 transition duration-300 ease-in-out motion-reduce:filter-none motion-reduce:duration-100',
               isDark
                 ? 'scale-50 -rotate-40 opacity-0 blur-sm motion-reduce:scale-100 motion-reduce:rotate-none motion-reduce:blur-none'
                 : 'scale-100 opacity-100 blur-none'
@@ -88,7 +88,7 @@ export default function Prefs({ lang, surface }: Props) {
           <Moon
             aria-hidden="true"
             className={cn(
-              'absolute size-5 transition duration-300 ease-in-out motion-reduce:transform-none motion-reduce:filter-none motion-reduce:duration-100',
+              'absolute size-5 transition duration-300 ease-in-out motion-reduce:filter-none motion-reduce:duration-100',
               isDark
                 ? 'scale-100 opacity-100 blur-none'
                 : 'scale-50 -rotate-40 opacity-0 blur-sm motion-reduce:scale-100 motion-reduce:rotate-none motion-reduce:blur-none'
