@@ -58,6 +58,7 @@ test('renders localized home pages, preserves URL parts, and persists the theme'
   await page.keyboard.press('Enter');
   await expect(page.locator('main')).toBeFocused();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(languageControl).toHaveAccessibleName('Language: EN');
   await expect(languageControl.locator('[data-slot="select-value"]')).toHaveText('EN');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Stories for curious minds.');
   await expect(page.locator('html')).toHaveClass(/dark/);
@@ -85,9 +86,9 @@ test('renders localized home pages, preserves URL parts, and persists the theme'
   await page.getByRole('option', { name: 'Español' }).click();
   await expect(page).toHaveURL(/\/es\?source=header#preferences$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
-  await expect(
-    page.getByRole('combobox', { name: 'Idioma' }).locator('[data-slot="select-value"]')
-  ).toHaveText('ES');
+  const spanishLanguageControl = page.getByRole('combobox', { name: 'Idioma' });
+  await expect(spanishLanguageControl).toHaveAccessibleName('Idioma: ES');
+  await expect(spanishLanguageControl.locator('[data-slot="select-value"]')).toHaveText('ES');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Historias para mentes curiosas.'
   );
