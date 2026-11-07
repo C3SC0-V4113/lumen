@@ -50,3 +50,12 @@ last), then by slug. The published job snapshot has no `sort_order` field.
 `content_revision.actor_id` intentionally has no foreign key and must remain unconstrained. Revision
 history survives account deletion, and a future user table must not add a foreign key that would
 couple audit retention to user retention.
+
+## Migraciones en D1
+
+D1 aplica migraciones dentro de transacciones e ignora `PRAGMA foreign_keys=OFF` en ese contexto.
+Reconstruir una tabla referenciada con `DROP TABLE` ejecuta sus acciones `CASCADE` o `SET NULL` y
+puede borrar datos hijos aunque la migración pase en el CLI local de SQLite. Evita reconstrucciones
+de tablas con dependientes. Si son necesarias, escribe la migración a mano y conserva/restaura las
+tablas hijas; `migrations.test.ts` bloquea futuros `DROP TABLE` de tablas referenciadas después de
+`0002`.
