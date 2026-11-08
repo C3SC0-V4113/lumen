@@ -52,7 +52,11 @@ function palette(surface: string, dark: boolean) {
         value,
       ])
     );
-  return { ...parseColors(rootSection), ...parseColors(section) } as Record<string, string>;
+  const surfaceColors = parseColors(section) as Record<string, string>;
+  if (section.match(/--control-line:\s*var\(--input\);/)) {
+    surfaceColors['control-line'] = surfaceColors.input;
+  }
+  return { ...parseColors(rootSection), ...surfaceColors } as Record<string, string>;
 }
 
 function luminance(oklch: string) {
@@ -128,6 +132,16 @@ describe('theme contrast', () => {
       expect(
         contrast(colors.input, background),
         `input ${colors.input} against ${background} in ${surface}${dark ? ' dark' : ' light'}`
+      ).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it.each(surfaces)('%s %s control line meets non-text contrast', (surface, dark) => {
+    const colors = palette(surface, dark);
+    for (const background of [colors.background, colors.card]) {
+      expect(
+        contrast(colors['control-line'], background),
+        `control line ${colors['control-line']} against ${background} in ${surface}${dark ? ' dark' : ' light'}`
       ).toBeGreaterThanOrEqual(3);
     }
   });

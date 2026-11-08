@@ -84,6 +84,7 @@
   --color-focus: var(--focus);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-control-line: var(--control-line);
   --color-destructive: var(--destructive);
   --color-destructive-muted: var(--destructive-muted);
   --color-accent-foreground: var(--accent-foreground);
@@ -118,6 +119,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-control: 0.75rem;
 }
 
 :root,
@@ -155,6 +157,7 @@
   --destructive-muted: oklch(0.937 0.029 38.52);
   --border: oklch(0.888 0.028 83.49);
   --input: oklch(0.586 0.041 81.96);
+  --control-line: var(--input);
   --ring: oklch(0.451 0.066 212.41);
   --focus: oklch(0.451 0.066 212.41);
   --success: oklch(0.418 0.062 212.41);
@@ -196,6 +199,7 @@
   --destructive-muted: oklch(0.272 0.045 37.26);
   --border: oklch(0.311 0.049 264.71);
   --input: oklch(0.612 0.057 260.95);
+  --control-line: var(--input);
   --ring: oklch(0.833 0.055 209.27);
   --focus: oklch(0.833 0.055 209.27);
   --success: oklch(0.833 0.055 209.27);
@@ -237,6 +241,7 @@
   --destructive-muted: oklch(0.937 0.029 38.52);
   --border: oklch(0.898 0.017 84.55);
   --input: oklch(0.605 0.027 83.34);
+  --control-line: var(--input);
   --ring: oklch(0.451 0.066 212.41);
   --focus: oklch(0.451 0.066 212.41);
   --success: oklch(0.467 0.113 147.91);
@@ -278,6 +283,7 @@
   --destructive-muted: oklch(0.272 0.045 37.26);
   --border: oklch(0.312 0.019 264.2);
   --input: oklch(0.583 0.022 260.11);
+  --control-line: var(--input);
   --ring: oklch(0.758 0.083 207.45);
   --focus: oklch(0.758 0.083 207.45);
   --success: oklch(0.792 0.115 152.35);

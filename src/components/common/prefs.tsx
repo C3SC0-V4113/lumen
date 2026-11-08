@@ -1,5 +1,5 @@
 import { cn } from 'cn';
-import { Moon, Sun } from 'lucide-react';
+import { Globe, Moon, Sun } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -45,40 +45,53 @@ export default function Prefs({ lang, surface }: Props) {
   }
 
   return (
-    <div role="group" aria-label={t(lang, 'preferences.group')} className="flex items-center gap-2">
+    <div
+      role="group"
+      aria-label={t(lang, 'preferences.group')}
+      className="inline-flex items-center gap-2"
+    >
       <Select value={lang} onValueChange={changeLocale}>
-        <SelectTrigger aria-label={t(lang, 'preferences.language')} size="touch">
-          <SelectValue />
+        <SelectTrigger
+          aria-label={`${t(lang, 'preferences.language')}: ${lang.toUpperCase()}`}
+          size="control"
+          variant="control"
+        >
+          <Globe aria-hidden="true" className="size-4" />
+          <SelectValue variant="control">{lang.toUpperCase()}</SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="en">English</SelectItem>
-          <SelectItem value="es">Español</SelectItem>
+          <SelectItem lang="en" value="en">
+            English
+          </SelectItem>
+          <SelectItem lang="es" value="es">
+            Español
+          </SelectItem>
         </SelectContent>
       </Select>
       <Button
         aria-label={t(lang, 'preferences.theme')}
         aria-pressed={isDark}
         onClick={toggleTheme}
-        size="touch"
-        variant="ghost"
+        size="icon-touch"
+        variant="control"
       >
         <span className="relative grid size-5 place-items-center">
           <Sun
             aria-hidden="true"
             className={cn(
-              'absolute size-5 transition duration-300 ease-in-out motion-reduce:transform-none motion-reduce:filter-none motion-reduce:duration-100',
+              'absolute size-5 transition duration-300 ease-in-out motion-reduce:filter-none motion-reduce:duration-100',
               isDark
-                ? 'scale-25 opacity-0 blur-sm motion-reduce:scale-100 motion-reduce:blur-none'
+                ? 'scale-50 -rotate-40 opacity-0 blur-sm motion-reduce:scale-100 motion-reduce:rotate-none motion-reduce:blur-none'
                 : 'scale-100 opacity-100 blur-none'
             )}
           />
           <Moon
             aria-hidden="true"
             className={cn(
-              'absolute size-5 transition duration-300 ease-in-out motion-reduce:transform-none motion-reduce:filter-none motion-reduce:duration-100',
+              'absolute size-5 transition duration-300 ease-in-out motion-reduce:filter-none motion-reduce:duration-100',
               isDark
                 ? 'scale-100 opacity-100 blur-none'
-                : 'scale-25 opacity-0 blur-sm motion-reduce:scale-100 motion-reduce:blur-none'
+                : 'scale-50 -rotate-40 opacity-0 blur-sm motion-reduce:scale-100 motion-reduce:rotate-none motion-reduce:blur-none'
             )}
           />
         </span>
