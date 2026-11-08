@@ -67,4 +67,5 @@ the rules for the rest of the application:
 - `shadcn/require-static-classes`: keep utility class names static.
 - `shadcn/no-unknown-classes`: use classes known to Tailwind.
 
-See [Architecture Decision Records](docs/adr/) for durable project constraints.
+See [Architecture Decision Records](docs/adr/) for durable project constraints, including the
+[image optimization strategy](docs/adr/0007-image-strategy.md).
