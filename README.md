@@ -9,10 +9,18 @@ the first deploy. Production Worker configuration is deferred to phase 15. Astro
 server-side `SITE_URL` and `SITE_ENV` values.
 
 Database and platform scripts: `pnpm run db:generate`, `pnpm run db:migrate:local`,
-`pnpm run db:migrate:staging` (CI only), `pnpm run cf:typegen`, and `pnpm run cf:typecheck`.
+`pnpm run db:seed:local`, `pnpm run db:seed:sql`, `pnpm run db:migrate:staging` (CI only),
+`pnpm run cf:typegen`, and `pnpm run cf:typecheck`. Local content setup from an empty database is
+`pnpm run db:migrate:local && pnpm run db:seed:local`; the seed command can be repeated safely.
+`db:seed:sql` generates `scripts/seed.sql` from the canonical `src/db/seed/` function. To prepare a
+staging seed artifact, run `pnpm run db:seed:sql`, then have the staging operator execute
+`wrangler d1 execute lumen-staging --remote --env staging --file scripts/seed.sql` after applying
+migrations. Do not run that remote command from a local development session.
 `pnpm run check` verifies the generated Cloudflare types are current. The shared audit schema and
 generated migrations live in `src/db/` and `migrations/`. Deploy and incident steps are in
 [`docs/runbooks/deploy.md`](docs/runbooks/deploy.md).
+
+See [the database ER diagram](docs/database.md) for the current D1 data model.
 
 Lumen is the foundation for an independent game studio website and private content management
 system. This phase establishes shared visual tokens, accessible shadcn components, English and

@@ -12,6 +12,7 @@ const migrationsDirectory = join(process.cwd(), 'migrations');
 
 export function createTestDb(): { sqlite: Database.Database; db: Db } {
   const sqlite = new Database(':memory:');
+  sqlite.pragma('foreign_keys = ON');
   const journal = JSON.parse(
     readFileSync(join(migrationsDirectory, 'meta/_journal.json'), 'utf8')
   ) as { entries: Array<{ idx: number; tag: string }> };

@@ -20,7 +20,7 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      'pnpm run db:migrate:local && pnpm run build && pnpm exec astro preview --ignore-lock --host 127.0.0.1 --port 4174',
+      'pnpm run db:migrate:local && pnpm run db:seed:local && pnpm run build && pnpm exec astro preview --ignore-lock --host 127.0.0.1 --port 4174',
     url: 'http://127.0.0.1:4174',
     reuseExistingServer: false,
     timeout: 120_000,
