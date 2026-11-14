@@ -1,5 +1,7 @@
 # 0006. Serve public content from validated published snapshots
 
+See `docs/database.md` for the ER diagram.
+
 - Status: Accepted
 - Date: 2026-11-05
 

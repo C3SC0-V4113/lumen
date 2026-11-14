@@ -20,6 +20,8 @@ migrations. Do not run that remote command from a local development session.
 generated migrations live in `src/db/` and `migrations/`. Deploy and incident steps are in
 [`docs/runbooks/deploy.md`](docs/runbooks/deploy.md).
 
+See [the database ER diagram](docs/database.md) for the current D1 data model.
+
 Lumen is the foundation for an independent game studio website and private content management
 system. This phase establishes shared visual tokens, accessible shadcn components, English and
 Spanish localization, and persistent theme preferences. Public pages use Astro server rendering;
