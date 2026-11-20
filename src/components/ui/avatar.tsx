@@ -5,16 +5,19 @@ import { cn } from 'cn';
 function Avatar({
   className,
   size = 'default',
+  variant = 'default',
   ...props
 }: AvatarPrimitive.Root.Props & {
   size?: 'default' | 'sm' | 'lg';
+  variant?: 'default' | 'portrait';
 }) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       data-size={size}
+      data-variant={variant}
       className={cn(
-        'group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten',
+        'group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 data-[variant=portrait]:rounded-2xl data-[variant=portrait]:after:rounded-2xl dark:after:mix-blend-lighten',
         className
       )}
       {...props}
@@ -32,12 +35,17 @@ function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
   );
 }
 
-function AvatarFallback({ className, ...props }: AvatarPrimitive.Fallback.Props) {
+function AvatarFallback({
+  className,
+  variant = 'default',
+  ...props
+}: AvatarPrimitive.Fallback.Props & { variant?: 'default' | 'portrait' }) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
         'flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs',
+        variant === 'portrait' && 'rounded-2xl bg-secondary text-2xl',
         className
       )}
       {...props}

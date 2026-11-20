@@ -1,16 +1,70 @@
 ---
-import Logo from '../components/common/logo.astro';
+import { env } from 'cloudflare:workers';
+
+import { getDb } from '../db';
+import Section from '../features/home/components/section.astro';
+import { getPublishedHome } from '../features/home/server/queries';
+import { getHomePresentation } from '../features/home/shared/presentation';
+import { listPublishedTeam } from '../features/team/server/queries';
 import { t } from '../i18n';
-import Layout from '../layouts/main.astro';
+import Site from '../layouts/site.astro';
+
+import type { HomeSection } from '../features/home/shared/section-colors';
+
+let home: Awaited<ReturnType<typeof getPublishedHome>> = null;
+let team: Awaited<ReturnType<typeof listPublishedTeam>> = [];
+try {
+  const db = getDb(env.DB);
+  home = await getPublishedHome(db, 'en');
+  team = await listPublishedTeam(db, 'en');
+} catch {
+  // The localized emergency Home content below handles a missing database binding.
+}
+const { teamPreview, fallback, stale } = getHomePresentation(home, team);
+const sections: HomeSection[] = home?.data.sections ?? [
+  {
+    id: 'fallback-hero',
+    kind: 'hero',
+    sortOrder: 0,
+    hidden: false,
+    heading: t('en', 'home.emergencyTitle'),
+    body: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: t('en', 'home.emergencyBody'),
+            },
+          ],
+        },
+      ],
+    },
+    bgLight: 'paper',
+    fgLight: 'ink',
+    bgDark: 'night',
+    fgDark: 'cream',
+    items: [],
+  },
+];
 ---
 
-<Layout lang="en" surface="site" title="Lumen — Independent game studio">
-  <Logo slot="brand" />
-  <section class="mx-auto flex min-h-[65vh] max-w-6xl flex-col justify-center px-6 py-20">
-    <p class="mb-4 text-sm font-medium tracking-wide text-primary">{t('en', 'home.eyebrow')}</p>
-    <h1 class="max-w-3xl text-5xl leading-tight md:text-7xl">{t('en', 'home.title')}</h1>
-    <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-      {t('en', 'home.description')}
-    </p>
-  </section>
-</Layout>
+<!-- Emergency content is used only when the published Home snapshot is missing or invalid. -->
+<Site
+  lang="en"
+  title="Lumen — Independent game studio"
+  description="Lumen makes thoughtful games with a little light in them."
+  overlayHeader
+>
+  {sections.map((section) => (
+    <Section
+      section={section}
+      lang="en"
+      team={teamPreview}
+      fallbackNotice={fallback}
+      staleNotice={stale}
+    />
+  ))}
+</Site>

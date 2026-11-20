@@ -13,7 +13,7 @@ export default defineConfig({
     locales: ['en', 'es'],
     routing: { prefixDefaultLocale: false },
   },
-  adapter: cloudflare({ sessionKVBindingName: 'SESSION_KV', imageService: 'passthrough' }),
+  adapter: cloudflare({ sessionKVBindingName: 'SESSION_KV', imageService: 'compile' }),
   security: {
     checkOrigin: true,
     csp: {

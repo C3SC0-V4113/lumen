@@ -167,6 +167,7 @@ erDiagram
         text id PK
         text section_id FK
         integer sort_order
+        text state "done, now, next, later; nullable"
     }
     home_section_item_translation {
         text item_id PK, FK
