@@ -1,0 +1,11 @@
+---
+import { RichTextRenderer } from './rich-text-renderer';
+
+interface Props {
+  value: unknown;
+}
+
+const { value } = Astro.props;
+---
+
+<RichTextRenderer value={value} />
