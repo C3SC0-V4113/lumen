@@ -331,3 +331,131 @@
     text-wrap: balance;
   }
 }
+
+/* Scoped hero beacon exception from ADR 0002: geometry and beam effects need masks and 3D. */
+@keyframes beacon-sweep {
+  from {
+    transform: rotate(-18deg) scaleX(0.75);
+    opacity: 0.16;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  to {
+    transform: rotate(18deg) scaleX(1);
+    opacity: 0.16;
+  }
+}
+@keyframes beacon-float {
+  from {
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    transform: translateX(-50%) translateY(-0.5rem);
+  }
+}
+@keyframes beacon-wave-drift {
+  from {
+    transform: translateX(-2%);
+  }
+  to {
+    transform: translateX(2%);
+  }
+}
+@utility beacon-scene {
+  perspective: 50rem;
+  isolation: isolate;
+}
+@utility beacon-stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0.65;
+  background-image: radial-gradient(circle, var(--lamp) 1px, transparent 1.5px);
+  background-size: 3rem 3rem;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+@utility beacon-beam {
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  width: 80%;
+  height: 54%;
+  transform-origin: left center;
+  transform: rotate(-8deg);
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--lamp) 58%, transparent),
+    transparent 88%
+  );
+  clip-path: polygon(0 48%, 100% 0, 100% 100%);
+  opacity: 0.3;
+  animation: beacon-sweep 9s ease-in-out infinite alternate;
+}
+@utility beacon-tower {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 22%;
+  width: 4rem;
+  height: 12rem;
+  transform: translateX(-50%);
+  border-radius: 0.5rem 0.5rem 0.2rem 0.2rem;
+  background: linear-gradient(90deg, var(--secondary), var(--foreground) 50%, var(--secondary));
+  clip-path: polygon(28% 0, 72% 0, 100% 100%, 0 100%);
+  animation: beacon-float 3.5s ease-in-out infinite alternate;
+}
+@utility beacon-lamp {
+  position: absolute;
+  left: 23%;
+  top: 7%;
+  width: 54%;
+  height: 15%;
+  border-radius: 0.2rem;
+  background: var(--lamp);
+  box-shadow: 0 0 1.5rem var(--lamp);
+}
+@utility beacon-deck {
+  position: absolute;
+  left: -35%;
+  bottom: 0;
+  width: 170%;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--foreground);
+}
+@utility beacon-wave {
+  position: absolute;
+  right: -12%;
+  bottom: 10%;
+  left: -12%;
+  height: 22%;
+  border-top: 1px solid color-mix(in oklch, var(--info) 75%, transparent);
+  border-radius: 50% 50% 0 0;
+  opacity: 0.7;
+  animation: beacon-wave-drift 6s ease-in-out infinite alternate;
+}
+@utility beacon-wave-one {
+  bottom: 10%;
+}
+@utility beacon-wave-two {
+  bottom: 2%;
+  opacity: 0.45;
+}
+@utility beacon-wave-three {
+  bottom: -6%;
+  opacity: 0.3;
+}
+:root.beacon-paused .beacon-beam {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .beacon-beam,
+  .beacon-tower,
+  .beacon-wave {
+    animation: none !important;
+  }
+  .beacon-beam {
+    transform: rotate(-8deg);
+    opacity: 0.22;
+  }
+}

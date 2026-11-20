@@ -1,16 +1,74 @@
 ---
-import Logo from '../components/common/logo.astro';
+import { env } from 'cloudflare:workers';
+
+import { getDb } from '../db';
+import Section from '../features/home/components/section.astro';
+import { getPublishedHome } from '../features/home/server/queries';
+import { listPublishedTeam } from '../features/team/server/queries';
 import { t } from '../i18n';
-import Layout from '../layouts/main.astro';
+import Site from '../layouts/site.astro';
+
+import type { HomeSection } from '../features/home/shared/section-colors';
+
+let home: Awaited<ReturnType<typeof getPublishedHome>> = null;
+let team: Awaited<ReturnType<typeof listPublishedTeam>> = [];
+let fallback = false;
+let stale = false;
+try {
+  const db = getDb(env.DB);
+  home = await getPublishedHome(db, 'en');
+  team = await listPublishedTeam(db, 'en');
+  fallback = !home;
+  stale = (home?.stale ?? false) || team.some((member) => member.stale);
+} catch {
+  fallback = true;
+}
+const sections: HomeSection[] = home?.data.sections ?? [
+  {
+    id: 'fallback-hero',
+    kind: 'hero',
+    sortOrder: 0,
+    hidden: false,
+    heading: 'Driftlight',
+    body: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: 'Keep a lighthouse that floats. Relight a dark coast one beacon at a time, and learn why the lights went out.',
+            },
+          ],
+        },
+      ],
+    },
+    bgLight: 'paper',
+    fgLight: 'ink',
+    bgDark: 'night',
+    fgDark: 'cream',
+    items: [],
+  },
+];
 ---
 
-<Layout lang="en" surface="site" title="Lumen — Independent game studio">
-  <Logo slot="brand" />
-  <section class="mx-auto flex min-h-[65vh] max-w-6xl flex-col justify-center px-6 py-20">
-    <p class="mb-4 text-sm font-medium tracking-wide text-primary">{t('en', 'home.eyebrow')}</p>
-    <h1 class="max-w-3xl text-5xl leading-tight md:text-7xl">{t('en', 'home.title')}</h1>
-    <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-      {t('en', 'home.description')}
+<Site
+  lang="en"
+  title="Lumen — Independent game studio"
+  description="Lumen makes thoughtful games with a little light in them."
+>
+  {fallback && (
+    <p role="status" class="mx-auto max-w-7xl px-5 py-3 text-sm text-muted-foreground">
+      {t('en', 'home.fallbackNotice')}
     </p>
-  </section>
-</Layout>
+  )}
+  {stale && (
+    <p role="status" class="mx-auto max-w-7xl px-5 py-3 text-sm text-muted-foreground">
+      {t('en', 'home.staleNotice')}
+    </p>
+  )}
+  {sections.map((section) => (
+    <Section section={section} lang="en" team={team} />
+  ))}
+</Site>
