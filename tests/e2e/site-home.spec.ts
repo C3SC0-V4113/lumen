@@ -18,7 +18,7 @@ test('renders published home content in both locales and maps the locale switch 
   ).toBeVisible();
   await expect(
     page.getByRole('status').filter({ hasText: 'Parte del contenido se muestra en inglés' })
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(
     page
       .getByRole('status')
@@ -27,6 +27,106 @@ test('renders published home content in both locales and maps the locale switch 
   await page.getByRole('combobox', { name: 'Idioma: ES' }).click();
   await page.getByRole('option', { name: 'English' }).click();
   await expect(page).toHaveURL('/');
+});
+
+test('hero copy keeps AA contrast and stays clear of the orb across themes and widths', async ({
+  page,
+}) => {
+  for (const theme of ['dark', 'light'] as const) {
+    for (const locale of ['en', 'es'] as const) {
+      for (const width of [320, 390, 768, 1440]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(locale === 'en' ? '/' : '/es');
+        await page.evaluate((value) => localStorage.setItem('lumen:site:theme', value), theme);
+        await page.reload();
+
+        const report = await page.locator('.hero-scene').evaluate((hero) => {
+          const toRgb = (value: string) => {
+            const oklch = value.match(/oklch\(([\d.]+%?)\s+([\d.]+)\s+([\d.]+)/);
+            if (oklch) {
+              const lightness =
+                Number(oklch[1].replace('%', '')) / (oklch[1].endsWith('%') ? 100 : 1);
+              const chroma = Number(oklch[2]);
+              const hue = (Number(oklch[3]) * Math.PI) / 180;
+              const a = chroma * Math.cos(hue);
+              const b = chroma * Math.sin(hue);
+              const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+              const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+              const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
+              const channels = [
+                4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+                -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+                -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+              ];
+              return channels.map((channel) => {
+                const clipped = Math.max(0, Math.min(1, channel));
+                return (
+                  255 *
+                  (clipped <= 0.0031308 ? 12.92 * clipped : 1.055 * clipped ** (1 / 2.4) - 0.055)
+                );
+              });
+            }
+            const rgb = value.match(/rgba?\(([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/);
+            return rgb ? rgb.slice(1, 4).map(Number) : [0, 0, 0];
+          };
+          const luminance = (channels: number[]) => {
+            const linear = channels.map((value) => {
+              const channel = value / 255;
+              return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+            });
+            return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+          };
+          const background = toRgb(getComputedStyle(hero).getPropertyValue('--hero-sky'));
+          const samples = Array.from(hero.querySelectorAll('.hero-copy h1, .hero-copy p')).map(
+            (element) => {
+              const color = getComputedStyle(element).color;
+              const foreground = luminance(toRgb(color));
+              const base = luminance(background);
+              return {
+                text: element.textContent,
+                color,
+                ratio: (Math.max(foreground, base) + 0.05) / (Math.min(foreground, base) + 0.05),
+              };
+            }
+          );
+          const copy = hero.querySelector('.hero-copy')?.getBoundingClientRect();
+          const dots = hero.querySelector('.hero-dots')?.getBoundingClientRect();
+          const firstWave = hero.querySelector('.hero-wave-a')?.getBoundingClientRect();
+          const tower = hero
+            .querySelector('.hero-control-tower .hero-tower-fill')
+            ?.getBoundingClientRect();
+          const copyElements = Array.from(hero.querySelectorAll('.hero-copy h1, .hero-copy p'));
+          const lighthouseClear =
+            !!tower &&
+            copyElements.every((element) => {
+              const rect = element.getBoundingClientRect();
+              return (
+                rect.right <= tower.left ||
+                rect.left >= tower.right ||
+                rect.bottom <= tower.top ||
+                rect.top >= tower.bottom
+              );
+            });
+          return {
+            minimumContrast: Math.min(...samples.map((sample) => sample.ratio)),
+            background: getComputedStyle(hero).getPropertyValue('--hero-sky'),
+            samples,
+            copyClearsOrb: !!copy && !!dots && copy.right <= dots.left,
+            copyClearsWaves: !!copy && !!firstWave && copy.bottom <= firstWave.top,
+            copyClearsLighthouse: lighthouseClear,
+          };
+        });
+
+        expect(
+          report.minimumContrast,
+          `${theme}/${locale}/${width}px ${JSON.stringify(report)}`
+        ).toBeGreaterThanOrEqual(4.5);
+        expect(report.copyClearsOrb, `${theme}/${locale}/${width}px`).toBe(true);
+        expect(report.copyClearsWaves, `${theme}/${locale}/${width}px`).toBe(true);
+        expect(report.copyClearsLighthouse, `${theme}/${locale}/${width}px`).toBe(true);
+      }
+    }
+  }
 });
 
 test('pauses and resumes the beacon and persists the choice', async ({ page }) => {

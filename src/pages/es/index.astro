@@ -4,6 +4,7 @@ import { env } from 'cloudflare:workers';
 import { getDb } from '../../db';
 import Section from '../../features/home/components/section.astro';
 import { getPublishedHome } from '../../features/home/server/queries';
+import { getHomePresentation } from '../../features/home/shared/presentation';
 import { listPublishedTeam } from '../../features/team/server/queries';
 import { t } from '../../i18n';
 import Site from '../../layouts/site.astro';
@@ -12,17 +13,14 @@ import type { HomeSection } from '../../features/home/shared/section-colors';
 
 let home: Awaited<ReturnType<typeof getPublishedHome>> = null;
 let team: Awaited<ReturnType<typeof listPublishedTeam>> = [];
-let fallback = false;
-let stale = false;
 try {
   const db = getDb(env.DB);
   home = await getPublishedHome(db, 'es');
   team = await listPublishedTeam(db, 'es');
-  fallback = !home || (home?.fallback ?? false) || team.some((member) => member.fallback);
-  stale = (home?.stale ?? false) || team.some((member) => member.stale);
 } catch {
-  fallback = true;
+  // El contenido localizado de emergencia de Inicio cubre la falta del enlace a la base de datos.
 }
+const { teamPreview, fallback, stale } = getHomePresentation(home, team);
 const sections: HomeSection[] = home?.data.sections ?? [
   {
     id: 'fallback-hero',
@@ -64,7 +62,7 @@ const sections: HomeSection[] = home?.data.sections ?? [
     <Section
       section={section}
       lang="es"
-      team={team}
+      team={teamPreview}
       fallbackNotice={fallback}
       staleNotice={stale}
     />

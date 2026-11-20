@@ -53,7 +53,7 @@ const items = section.items;
             </a>
           </div>
           <ul class="grid grid-cols-2 gap-5 sm:grid-cols-4">
-            {team.slice(0, 4).map((member) => (
+            {team.map((member) => (
               <li>
                 <a class="group flex flex-col gap-3" href={lang === 'es' ? '/es/team' : '/team'}>
                   <TeamAvatar
