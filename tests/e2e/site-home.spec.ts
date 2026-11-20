@@ -132,8 +132,10 @@ test('hero copy keeps AA contrast and stays clear of the orb across themes and w
 test('pauses and resumes the beacon and persists the choice', async ({ page }) => {
   await page.goto('/');
   const button = page.getByRole('button', { name: 'Pause lighthouse beam' });
+  const beaconIsland = page.locator('astro-island').filter({ has: button });
+  await expect(beaconIsland).not.toHaveAttribute('ssr');
   await expect(button).toHaveAttribute('aria-pressed', 'false');
-  for (let tab = 0; tab < 11; tab += 1) await page.keyboard.press('Tab');
+  await button.focus();
   await expect(button).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('button', { name: 'Resume lighthouse beam' })).toHaveAttribute(
@@ -168,7 +170,10 @@ test('beacon pause state remains interactive when localStorage is blocked', asyn
     };
   });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Pause lighthouse beam' }).click();
+  const button = page.getByRole('button', { name: 'Pause lighthouse beam' });
+  const beaconIsland = page.locator('astro-island').filter({ has: button });
+  await expect(beaconIsland).not.toHaveAttribute('ssr');
+  await button.click();
   await expect(page.getByRole('button', { name: 'Resume lighthouse beam' })).toHaveAttribute(
     'aria-pressed',
     'true'
