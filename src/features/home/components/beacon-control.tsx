@@ -3,6 +3,8 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { Button } from '@/components/ui/button';
 import { t, type Locale } from '@/i18n';
 
+let fallbackPaused = false;
+
 export function BeaconControl({ lang }: { lang: Locale }) {
   const paused = useSyncExternalStore(
     (notify) => {
@@ -17,18 +19,19 @@ export function BeaconControl({ lang }: { lang: Locale }) {
       try {
         return localStorage.getItem('lumen:beacon-paused') === 'true';
       } catch {
-        return false;
+        return fallbackPaused;
       }
     },
     () => false
   );
   function toggle() {
     const next = !paused;
+    fallbackPaused = next;
     document.documentElement.classList.toggle('beacon-paused', next);
     try {
       localStorage.setItem('lumen:beacon-paused', String(next));
     } catch {
-      /* in-memory state still applies */
+      /* The module fallback keeps the control usable without browser storage. */
     }
     window.dispatchEvent(new Event('lumen:beacon-preference'));
   }

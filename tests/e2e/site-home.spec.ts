@@ -44,6 +44,30 @@ test('pauses and resumes the beacon and persists the choice', async ({ page }) =
   );
 });
 
+test('beacon pause state remains interactive when localStorage is blocked', async ({ page }) => {
+  await page.addInitScript(() => {
+    const getItem = Storage.prototype.getItem;
+    const setItem = Storage.prototype.setItem;
+    Storage.prototype.getItem = function (key) {
+      if (key === 'lumen:beacon-paused')
+        throw new DOMException('Storage is unavailable', 'SecurityError');
+      return getItem.call(this, key);
+    };
+    Storage.prototype.setItem = function (key, value) {
+      if (key === 'lumen:beacon-paused')
+        throw new DOMException('Storage is unavailable', 'SecurityError');
+      return setItem.call(this, key, value);
+    };
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pause lighthouse beam' }).click();
+  await expect(page.getByRole('button', { name: 'Resume lighthouse beam' })).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  );
+  await expect(page.locator('html')).toHaveClass(/beacon-paused/);
+});
+
 test('reduced motion removes hero animations and mobile header opens the sheet menu', async ({
   page,
 }) => {
