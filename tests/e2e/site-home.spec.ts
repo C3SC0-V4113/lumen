@@ -1,4 +1,12 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
+
+async function tabToTarget(page: Page, target: Locator, maxTabs: number) {
+  for (let tab = 0; tab < maxTabs; tab += 1) {
+    await page.keyboard.press('Tab');
+    if (await target.evaluate((element) => element === document.activeElement)) return true;
+  }
+  return false;
+}
 
 test('renders published home content in both locales and maps the locale switch to the same route', async ({
   page,
@@ -76,19 +84,25 @@ test('hero copy keeps AA contrast and stays clear of the orb across themes and w
             });
             return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
           };
-          const background = toRgb(getComputedStyle(hero).getPropertyValue('--hero-sky'));
-          const samples = Array.from(hero.querySelectorAll('.hero-copy h1, .hero-copy p')).map(
-            (element) => {
-              const color = getComputedStyle(element).color;
-              const foreground = luminance(toRgb(color));
-              const base = luminance(background);
-              return {
-                text: element.textContent,
-                color,
-                ratio: (Math.max(foreground, base) + 0.05) / (Math.min(foreground, base) + 0.05),
-              };
-            }
-          );
+          const heroSky = toRgb(getComputedStyle(hero).getPropertyValue('--hero-sky'));
+          const samples = Array.from(
+            hero.querySelectorAll('.hero-copy h1, .hero-copy p, .hero-copy a')
+          ).map((element) => {
+            const color = getComputedStyle(element).color;
+            const foreground = luminance(toRgb(color));
+            const isFilledCta = element.matches('a.bg-lamp');
+            const background = isFilledCta
+              ? toRgb(getComputedStyle(element).backgroundColor)
+              : heroSky;
+            const base = luminance(background);
+            return {
+              text: element.textContent,
+              color,
+              background: isFilledCta ? getComputedStyle(element).backgroundColor : 'hero sky',
+              isCta: element.tagName === 'A',
+              ratio: (Math.max(foreground, base) + 0.05) / (Math.min(foreground, base) + 0.05),
+            };
+          });
           const copy = hero.querySelector('.hero-copy')?.getBoundingClientRect();
           const dots = hero.querySelector('.hero-dots')?.getBoundingClientRect();
           const firstWave = hero.querySelector('.hero-wave-a')?.getBoundingClientRect();
@@ -121,6 +135,13 @@ test('hero copy keeps AA contrast and stays clear of the orb across themes and w
           report.minimumContrast,
           `${theme}/${locale}/${width}px ${JSON.stringify(report)}`
         ).toBeGreaterThanOrEqual(4.5);
+        expect(report.samples.filter((sample) => sample.isCta)).toHaveLength(2);
+        expect(
+          Math.min(
+            ...report.samples.filter((sample) => sample.isCta).map((sample) => sample.ratio)
+          ),
+          `${theme}/${locale}/${width}px CTA contrast ${JSON.stringify(report.samples.filter((sample) => sample.isCta))}`
+        ).toBeGreaterThanOrEqual(4.5);
         expect(report.copyClearsOrb, `${theme}/${locale}/${width}px`).toBe(true);
         expect(report.copyClearsWaves, `${theme}/${locale}/${width}px`).toBe(true);
         expect(report.copyClearsLighthouse, `${theme}/${locale}/${width}px`).toBe(true);
@@ -135,7 +156,7 @@ test('pauses and resumes the beacon and persists the choice', async ({ page }) =
   const beaconIsland = page.locator('astro-island').filter({ has: button });
   await expect(beaconIsland).not.toHaveAttribute('ssr');
   await expect(button).toHaveAttribute('aria-pressed', 'false');
-  await button.focus();
+  expect(await tabToTarget(page, button, 30)).toBe(true);
   await expect(button).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('button', { name: 'Resume lighthouse beam' })).toHaveAttribute(
