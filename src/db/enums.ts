@@ -6,6 +6,7 @@ export const mediaKinds = ['key_art', 'screenshot', 'photo', 'portrait', 'logo']
 export const linkKinds = ['talk', 'interview', 'portfolio', 'social'] as const;
 export const milestoneStates = ['done', 'current', 'upcoming'] as const;
 export const sectionKinds = ['hero', 'grid', 'team', 'steps', 'cta', 'form'] as const;
+export const homeItemStates = ['done', 'now', 'next', 'later'] as const;
 export const animations = ['fade_up', 'none'] as const;
 export const pageKinds = ['sections', 'derived'] as const;
 export const revisionStates = ['draft', 'review', 'approved', 'published', 'superseded'] as const;
@@ -36,6 +37,7 @@ export const enumSql = {
   linkKind: linkKinds,
   milestoneState: milestoneStates,
   sectionKind: sectionKinds,
+  homeItemState: homeItemStates,
   animation: animations,
   pageKind: pageKinds,
   revisionState: revisionStates,

@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   publishedSnapshot,
+  homeSectionItem,
+  homeSectionItemTranslation,
   settings,
   teamMember,
   teamMemberTranslation,
@@ -51,8 +53,24 @@ describe('content snapshot seed', () => {
     expect((await listPublishedJobs(db, 'es', { status: 'open' })).map((job) => job.slug)).toEqual([
       'technical-sound-designer',
     ]);
-    expect((await getPublishedHome(db, 'en'))?.data.sections).toHaveLength(6);
-    expect((await getPublishedHome(db, 'es'))?.data.sections).toHaveLength(6);
+    const englishHome = await getPublishedHome(db, 'en');
+    const spanishHome = await getPublishedHome(db, 'es');
+    expect(englishHome?.data.sections).toHaveLength(6);
+    expect(spanishHome?.data.sections).toHaveLength(6);
+    expect(await db.select().from(homeSectionItem)).toHaveLength(8);
+    expect(await db.select().from(homeSectionItemTranslation)).toHaveLength(16);
+    expect(
+      englishHome?.data.sections.find((section) => section.kind === 'grid')?.items
+    ).toHaveLength(3);
+    expect(spanishHome?.data.sections.find((section) => section.kind === 'steps')?.items).toEqual(
+      expect.arrayContaining([expect.objectContaining({ title: 'Demo gratis', state: 'now' })])
+    );
+    expect(
+      englishHome?.data.sections.find((section) => section.kind === 'grid')?.body
+    ).toBeTruthy();
+    expect(
+      englishHome?.data.sections.find((section) => section.kind === 'form')?.body
+    ).toBeTruthy();
     await db.update(settings).set({ stalePolicy: 'source' }).where(eq(settings.id, 1));
     expect((await getPublishedMember(db, 'kai-moreno', 'es'))?.fallback).toBe(true);
     await db.update(settings).set({ stalePolicy: 'hide' }).where(eq(settings.id, 1));
@@ -93,6 +111,19 @@ describe('content snapshot seed', () => {
     expect(listEntry?.fallback).toBe(true);
     expect(detail?.stale).toBe(false);
     expect(listEntry?.stale).toBe(false);
+  });
+
+  it('marks the Home snapshot as fallback when source content is served for an outdated translation', async () => {
+    const { db, sqlite } = createTestDb();
+    close = () => sqlite.close();
+    await seed(db);
+    await db.update(settings).set({ stalePolicy: 'source' }).where(eq(settings.id, 1));
+    await db
+      .update(publishedSnapshot)
+      .set({ sourceVersion: 0 })
+      .where(and(eq(publishedSnapshot.entityType, 'home'), eq(publishedSnapshot.locale, 'es')));
+
+    expect((await getPublishedHome(db, 'es'))?.fallback).toBe(true);
   });
 
   it('rejects invalid enums and foreign keys', async () => {

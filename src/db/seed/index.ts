@@ -3,6 +3,8 @@ import {
   game,
   gameTranslation,
   homeSection,
+  homeSectionItem,
+  homeSectionItemTranslation,
   homeSectionTranslation,
   job,
   jobTranslation,
@@ -32,6 +34,76 @@ import type { Db } from '../index';
 
 const now = new Date(Date.UTC(2026, 10, 5));
 const roles = new Map(team.map(([slug, , en, es]) => [slug, { en, es }]));
+const homeItems = {
+  grid: [
+    [
+      'relight-coast',
+      'Relight the coast',
+      'Every beacon you repair opens a new stretch of map and a route home.',
+      'Ilumina la costa',
+      'Cada faro que reparas abre un nuevo tramo del mapa y una ruta de regreso.',
+      null,
+    ],
+    [
+      'navigate-hand',
+      'Navigate by hand',
+      'Read the stars, the tides, and the charts you draw yourself. No minimap.',
+      'Navega a mano',
+      'Lee las estrellas, las mareas y tus propias cartas. No hay minimapa.',
+      null,
+    ],
+    [
+      'island-towns',
+      'Meet the island towns',
+      'Trade oil for stories. Each town remembers the night its light went out.',
+      'Conoce los pueblos',
+      'Intercambia aceite por historias. Cada pueblo recuerda cuándo se apagó su luz.',
+      null,
+    ],
+  ],
+  steps: [
+    ['prototype', 'Prototype', '2025', 'Prototipo', '2025', 'done'],
+    [
+      'vertical-slice',
+      'Vertical slice',
+      'Spring 2026',
+      'Versión vertical',
+      'Primavera de 2026',
+      'done',
+    ],
+    [
+      'free-demo',
+      'Free demo',
+      'Updated monthly',
+      'Demo gratis',
+      'Actualizaciones mensuales',
+      'now',
+    ],
+    [
+      'early-access',
+      'Early access',
+      'Early 2027',
+      'Acceso anticipado',
+      'Principios de 2027',
+      'next',
+    ],
+    ['release-1', 'Version 1.0', 'Late 2027', 'Versión 1.0', 'Finales de 2027', 'later'],
+  ],
+} as const;
+const sectionBodies = {
+  hero: {
+    en: 'Keep a lighthouse that floats. Relight a dark coast one beacon at a time, and learn why the lights went out.',
+    es: 'Mantén a flote un faro. Ilumina una costa oscura, una señal a la vez, y descubre por qué se apagaron las luces.',
+  },
+  grid: {
+    en: 'You steer by the stars, trade oil with island towns, and fix each beacon by hand. Nothing chases you. The sea just gets darker the longer you wait.',
+    es: 'Te orientas con las estrellas, intercambias aceite con pueblos isleños y reparas cada faro a mano. Nada te persigue. El mar se oscurece cuanto más esperas.',
+  },
+  form: {
+    en: 'Demo updates and behind-the-scenes from the team. No spam, and you can leave anytime.',
+    es: 'Novedades de la demo y lo que ocurre detrás de escena con el equipo. Sin spam y puedes darte de baja cuando quieras.',
+  },
+} as const;
 
 async function publish(
   db: Db,
@@ -375,11 +447,60 @@ export async function seed(db: Db) {
           await Promise.all(
             locales.map((locale) => {
               const heading = locale === 'en' ? headingEn : headingSpanish;
+              const body =
+                kind in sectionBodies
+                  ? rich(sectionBodies[kind as keyof typeof sectionBodies][locale])
+                  : null;
               return db
                 .insert(homeSectionTranslation)
-                .values({ sectionId: id, locale, heading, body: null })
-                .onConflictDoNothing()
+                .values({
+                  sectionId: id,
+                  locale,
+                  heading,
+                  body: body ? JSON.stringify(body) : null,
+                })
+                .onConflictDoUpdate({
+                  target: [homeSectionTranslation.sectionId, homeSectionTranslation.locale],
+                  set: { heading, body: body ? JSON.stringify(body) : null },
+                })
                 .run();
+            })
+          );
+          const rows = kind === 'grid' ? homeItems.grid : kind === 'steps' ? homeItems.steps : [];
+          await Promise.all(
+            rows.map(async ([slug, titleEn, bodyEn, titleEs, bodyEs, state], itemIndex) => {
+              const itemId = `home-${kind}-${slug}`;
+              await db
+                .insert(homeSectionItem)
+                .values({ id: itemId, sectionId: id, sortOrder: itemIndex, state })
+                .onConflictDoUpdate({
+                  target: homeSectionItem.id,
+                  set: { sectionId: id, sortOrder: itemIndex, state },
+                })
+                .run();
+              await Promise.all(
+                locales.map((locale) =>
+                  db
+                    .insert(homeSectionItemTranslation)
+                    .values({
+                      itemId,
+                      locale,
+                      title: locale === 'en' ? titleEn : titleEs,
+                      body: locale === 'en' ? bodyEn : bodyEs,
+                    })
+                    .onConflictDoUpdate({
+                      target: [
+                        homeSectionItemTranslation.itemId,
+                        homeSectionItemTranslation.locale,
+                      ],
+                      set: {
+                        title: locale === 'en' ? titleEn : titleEs,
+                        body: locale === 'en' ? bodyEn : bodyEs,
+                      },
+                    })
+                    .run()
+                )
+              );
             })
           );
           return {
@@ -388,12 +509,19 @@ export async function seed(db: Db) {
             sortOrder: index,
             hidden: false,
             heading: headingEn,
-            body: null,
+            body:
+              kind in sectionBodies
+                ? rich(sectionBodies[kind as keyof typeof sectionBodies].en)
+                : null,
             bgLight,
             fgLight,
             bgDark,
             fgDark,
-            items: [],
+            items: rows.map(([, titleEn, bodyEn, , , state]) => ({
+              title: titleEn,
+              body: bodyEn,
+              state,
+            })),
           };
         }
       )
@@ -401,10 +529,23 @@ export async function seed(db: Db) {
   };
   await publish(db, 'home', 'home', 'en', 1, null, homeSnapshot);
   await publish(db, 'home', 'home', 'es', 1, 1, {
-    sections: homeSnapshot.sections.map((section, index) => ({
-      ...section,
-      heading: homeSections[index]?.[2] ?? null,
-    })),
+    sections: homeSnapshot.sections.map((section, index) => {
+      const kind = homeSections[index]?.[0];
+      const rows = kind === 'grid' ? homeItems.grid : kind === 'steps' ? homeItems.steps : [];
+      return {
+        ...section,
+        heading: homeSections[index]?.[2] ?? null,
+        body:
+          kind && kind in sectionBodies
+            ? rich(sectionBodies[kind as keyof typeof sectionBodies].es)
+            : null,
+        items: rows.map(([, , , titleEs, bodyEs, state]) => ({
+          title: titleEs,
+          body: bodyEs,
+          state,
+        })),
+      };
+    }),
   });
 
   const publicMembers = await Promise.all(
