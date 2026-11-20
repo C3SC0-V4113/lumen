@@ -1,206 +1,121 @@
 ---
-import { BeaconControl } from './beacon-control';
+import Hero from './hero.astro';
 import { TeamAvatar } from './team-avatar';
 import RichText from '../../../components/common/rich-text.astro';
 import { t, type Locale } from '../../../i18n';
 import { sectionColorClasses } from '../shared/section-colors';
 
 import type { HomeSection } from '../shared/section-colors';
-type Section = HomeSection;
 type TeamCard = { name: string; role: string };
 interface Props {
-  section: Section;
+  section: HomeSection;
   lang: Locale;
   team: TeamCard[];
+  fallbackNotice?: boolean;
+  staleNotice?: boolean;
 }
-const { section, lang, team } = Astro.props;
+const { section, lang, team, fallbackNotice = false, staleNotice = false } = Astro.props;
 const colors = sectionColorClasses(section);
 const title = section.heading ?? '';
-const fallbackCards =
-  lang === 'es'
-    ? [
-        {
-          title: 'Ilumina la costa',
-          body: 'Cada faro que reparas abre un nuevo tramo del mapa y una ruta de regreso.',
-        },
-        {
-          title: 'Navega a mano',
-          body: 'Lee las estrellas, las mareas y tus propias cartas. No hay minimapa.',
-        },
-        {
-          title: 'Conoce los pueblos',
-          body: 'Intercambia aceite por historias. Cada pueblo recuerda cuándo se apagó su luz.',
-        },
-      ]
-    : [
-        {
-          title: 'Relight the coast',
-          body: 'Every beacon you repair opens a new stretch of map and a new route home.',
-        },
-        {
-          title: 'Navigate by hand',
-          body: 'Read the stars, the tides, and the charts you draw yourself. No minimap.',
-        },
-        {
-          title: 'Meet the island towns',
-          body: 'Trade oil for stories. Each town remembers the night its light went out.',
-        },
-      ];
-const fallbackStages =
-  lang === 'es'
-    ? [
-        { title: 'Prototipo · 2025', body: 'Completado' },
-        { title: 'Versión vertical · primavera de 2026', body: 'Completado' },
-        { title: 'Demo gratis · actualizaciones mensuales', body: 'Ahora' },
-        { title: 'Acceso anticipado · principios de 2027', body: 'Siguiente' },
-        { title: 'Versión 1.0 · finales de 2027', body: 'Después' },
-      ]
-    : [
-        { title: 'Prototype · 2025', body: 'Done' },
-        { title: 'Vertical slice · spring 2026', body: 'Done' },
-        { title: 'Free demo · updated monthly', body: 'Now' },
-        { title: 'Early access · early 2027', body: 'Next' },
-        { title: 'Version 1.0 · late 2027', body: 'Later' },
-      ];
-const items = section.items.length
-  ? section.items
-  : section.kind === 'grid'
-    ? fallbackCards
-    : section.kind === 'steps'
-      ? fallbackStages
-      : [];
+const items = section.items;
 ---
 
-<section class:list={['px-5 py-16 md:px-8 md:py-24', colors]}>
-  <div class="mx-auto max-w-7xl">
-    {section.kind === 'hero' ? (
-      <div class="relative isolate grid min-h-[34rem] items-center overflow-hidden rounded-3xl bg-card px-7 py-16 md:min-h-[40rem] md:grid-cols-2 md:px-16">
-        <div class="relative z-10 max-w-xl space-y-6">
-          <p class="font-mono text-xs tracking-[0.14em] text-primary">
-            {t(lang, 'home.gameEyebrow')}
-          </p>
-          <h1 class="text-6xl leading-[0.95] md:text-8xl">{title || 'Driftlight'}</h1>
+{section.kind === 'hero' ? (
+  <Hero section={section} lang={lang} fallbackNotice={fallbackNotice} staleNotice={staleNotice} />
+) : (
+  <section class:list={['px-5 py-16 md:px-8 md:py-24', colors]}>
+    <div class="mx-auto max-w-7xl">
+      {section.kind === 'form' ? (
+        <div class="mx-auto max-w-3xl space-y-4 text-center">
+          <h2 class="text-4xl md:text-5xl">{title}</h2>
+          {section.body && (
+            <div class="text-muted-foreground">
+              <RichText value={section.body} />
+            </div>
+          )}
+        </div>
+      ) : section.kind === 'cta' ? (
+        <div class="mx-auto flex max-w-4xl flex-col items-start gap-6 rounded-3xl border border-border bg-card p-8 md:flex-row md:items-center md:justify-between md:p-12">
+          <h2 class="text-4xl md:max-w-xl md:text-5xl">{title}</h2>
+          <a
+            class="shrink-0 rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground"
+            href={lang === 'es' ? '/es/jobs' : '/jobs'}
+          >
+            {lang === 'es' ? 'Ver empleos' : 'See open roles'}
+          </a>
+        </div>
+      ) : section.kind === 'team' ? (
+        <div id="team" class="space-y-8">
+          <div class="flex flex-wrap items-end justify-between gap-5">
+            <h2 class="max-w-2xl text-4xl md:text-5xl">{title}</h2>
+            <a class="font-semibold text-primary" href={lang === 'es' ? '/es/team' : '/team'}>
+              {t(lang, 'home.meetTeam')}
+            </a>
+          </div>
+          <ul class="grid grid-cols-2 gap-5 sm:grid-cols-4">
+            {team.slice(0, 4).map((member) => (
+              <li>
+                <a class="group flex flex-col gap-3" href={lang === 'es' ? '/es/team' : '/team'}>
+                  <TeamAvatar
+                    initials={member.name
+                      .split(' ')
+                      .map((part) => part[0])
+                      .slice(0, 2)
+                      .join('')}
+                  />
+                  <span class="font-heading text-xl group-hover:text-primary">{member.name}</span>
+                  <span class="text-sm text-muted-foreground">{member.role}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div class="space-y-8" id={section.kind === 'grid' ? 'about' : undefined}>
+          {title && <h2 class="max-w-3xl text-4xl md:text-5xl">{title}</h2>}
           {section.body && (
             <div class="max-w-prose space-y-4 text-lg leading-relaxed text-muted-foreground">
               <RichText value={section.body} />
             </div>
           )}
-          {!section.body && (
-            <p class="max-w-prose text-lg leading-relaxed text-muted-foreground">
-              {lang === 'es'
-                ? 'Mantén a flote un faro. Ilumina una costa oscura, una señal a la vez, y descubre por qué se apagaron las luces.'
-                : 'Keep a lighthouse that floats. Relight a dark coast one beacon at a time, and learn why the lights went out.'}
-            </p>
+          {items.length > 0 && section.kind === 'steps' && (
+            <ol class="grid gap-3 md:grid-cols-5">
+              {items.map((item) => (
+                <li
+                  class:list={[
+                    'rounded-xl border border-border bg-card p-5',
+                    item.state === 'now' && 'border-primary',
+                  ]}
+                >
+                  <p class="font-mono text-xs uppercase tracking-wider text-primary">
+                    {item.state === 'done'
+                      ? t(lang, 'home.stepDone')
+                      : item.state === 'now'
+                        ? t(lang, 'home.stepNow')
+                        : item.state === 'next'
+                          ? t(lang, 'home.stepNext')
+                          : item.state === 'later'
+                            ? t(lang, 'home.stepLater')
+                            : ''}
+                  </p>
+                  <p class="mt-3 font-semibold">{item.title}</p>
+                  <p class="mt-2 text-sm text-muted-foreground">{item.body}</p>
+                </li>
+              ))}
+            </ol>
           )}
-          <div id="wishlist" class="flex flex-wrap gap-3">
-            <a
-              class="rounded-lg bg-lamp px-5 py-3 font-semibold text-lamp-foreground"
-              href="#wishlist"
-            >
-              {t(lang, 'home.wishlist')}
-            </a>
-            <a class="rounded-lg border border-border px-5 py-3 font-semibold" href="#about">
-              {t(lang, 'home.demo')}
-            </a>
-          </div>
-          <p class="text-sm text-muted-foreground">{t(lang, 'home.release')}</p>
+          {items.length > 0 && section.kind !== 'steps' && (
+            <ul class="grid gap-5 md:grid-cols-3">
+              {items.map((item) => (
+                <li class="rounded-2xl border border-border bg-card p-6">
+                  <h3 class="text-2xl">{item.title}</h3>
+                  <p class="mt-3 leading-relaxed text-muted-foreground">{item.body}</p>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        <div
-          class="beacon-scene relative mx-auto mt-12 h-80 w-full max-w-lg md:mt-0"
-          aria-hidden="true"
-        >
-          <div class="beacon-stars" />
-          <div class="beacon-beam" />
-          <div class="beacon-tower">
-            <span class="beacon-lamp" />
-            <span class="beacon-deck" />
-          </div>
-          <div class="beacon-wave beacon-wave-one" />
-          <div class="beacon-wave beacon-wave-two" />
-          <div class="beacon-wave beacon-wave-three" />
-        </div>
-        <BeaconControl client:load lang={lang} />
-      </div>
-    ) : section.kind === 'form' ? (
-      <div class="mx-auto max-w-3xl space-y-4 text-center">
-        <h2 class="text-4xl md:text-5xl">{title}</h2>
-        {section.body && (
-          <div class="text-muted-foreground">
-            <RichText value={section.body} />
-          </div>
-        )}
-        {/* TODO(phase-14): render the newsletter form when its backend ships. */}
-      </div>
-    ) : section.kind === 'cta' ? (
-      <div class="mx-auto flex max-w-4xl flex-col items-start gap-6 rounded-3xl border border-border bg-card p-8 md:flex-row md:items-center md:justify-between md:p-12">
-        <h2 class="text-4xl md:max-w-xl md:text-5xl">{title}</h2>
-        <a
-          class="shrink-0 rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground"
-          href={lang === 'es' ? '/es/jobs' : '/jobs'}
-        >
-          {lang === 'es' ? 'Ver empleos' : 'See open roles'}
-        </a>
-      </div>
-    ) : section.kind === 'team' ? (
-      <div id="team" class="space-y-8">
-        <div class="flex flex-wrap items-end justify-between gap-5">
-          <h2 class="max-w-2xl text-4xl md:text-5xl">{title}</h2>
-          <a class="font-semibold text-primary" href={lang === 'es' ? '/es/team' : '/team'}>
-            {t(lang, 'home.meetTeam')}
-          </a>
-        </div>
-        <ul class="grid grid-cols-2 gap-5 sm:grid-cols-4">
-          {team.slice(0, 4).map((member) => (
-            <li>
-              <a class="group flex flex-col gap-3" href={lang === 'es' ? '/es/team' : '/team'}>
-                <TeamAvatar
-                  initials={member.name
-                    .split(' ')
-                    .map((part) => part[0])
-                    .slice(0, 2)
-                    .join('')}
-                />
-                <span class="font-heading text-xl group-hover:text-primary">{member.name}</span>
-                <span class="text-sm text-muted-foreground">{member.role}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    ) : (
-      <div class="space-y-8" id={section.kind === 'grid' ? 'about' : undefined}>
-        {title && <h2 class="max-w-3xl text-4xl md:text-5xl">{title}</h2>}
-        {section.body && (
-          <div class="max-w-prose space-y-4 text-lg leading-relaxed text-muted-foreground">
-            <RichText value={section.body} />
-          </div>
-        )}
-        {items.length > 0 && section.kind === 'steps' && (
-          <ol class="grid gap-3 md:grid-cols-5">
-            {items.map((item, index) => (
-              <li
-                class:list={[
-                  'rounded-xl border border-border bg-card p-5',
-                  index === 2 && 'border-primary',
-                ]}
-              >
-                <p class="font-mono text-xs uppercase tracking-wider text-primary">{item.body}</p>
-                <p class="mt-3 font-semibold">{item.title}</p>
-              </li>
-            ))}
-          </ol>
-        )}
-        {items.length > 0 && section.kind !== 'steps' && (
-          <ul class="grid gap-5 md:grid-cols-3">
-            {items.map((item) => (
-              <li class="rounded-2xl border border-border bg-card p-6">
-                <h3 class="text-2xl">{item.title}</h3>
-                <p class="mt-3 leading-relaxed text-muted-foreground">{item.body}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    )}
-  </div>
-</section>
+      )}
+    </div>
+  </section>
+)}

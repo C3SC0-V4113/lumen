@@ -41,14 +41,23 @@ export function BeaconControl({ lang }: { lang: Locale }) {
   return (
     <Button
       type="button"
-      variant="control"
+      variant="beacon"
       size="touch"
       aria-pressed={paused}
       aria-label={t(lang, paused ? 'home.beaconResume' : 'home.beaconPause')}
       onClick={toggle}
-      className="absolute right-5 bottom-5 z-10"
     >
-      {paused ? t(lang, 'home.beaconResume') : t(lang, 'home.beaconPause')}
+      <svg viewBox="0 0 80 150" aria-hidden="true" className="hero-control-tower">
+        <path d="M22 37h36l13 96H9l13-96Z" className="hero-tower-fill" />
+        <path d="M19 54h42l3 12H17l2-12Zm-5 36h52l2 12H12l2-12Z" className="hero-tower-band" />
+        <path d="M20 33h40l-6-13H26l-6 13Z" className="hero-roof-fill" />
+        <rect x="26" y="9" width="28" height="12" rx="2" className="hero-lamp-fill" />
+        <path d="M16 38h48M8 134h64" className="hero-tower-line" />
+      </svg>
+      <span className="hero-control-ring" aria-hidden="true"></span>
+      <span className="hero-control-tip" aria-hidden="true">
+        {paused ? t(lang, 'home.beaconResume') : t(lang, 'home.beaconPause')}
+      </span>
     </Button>
   );
 }

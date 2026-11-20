@@ -18,7 +18,7 @@ try {
   const db = getDb(env.DB);
   home = await getPublishedHome(db, 'en');
   team = await listPublishedTeam(db, 'en');
-  fallback = !home;
+  fallback = !home || (home?.fallback ?? false) || team.some((member) => member.fallback);
   stale = (home?.stale ?? false) || team.some((member) => member.stale);
 } catch {
   fallback = true;
@@ -29,7 +29,7 @@ const sections: HomeSection[] = home?.data.sections ?? [
     kind: 'hero',
     sortOrder: 0,
     hidden: false,
-    heading: 'Driftlight',
+    heading: t('en', 'home.emergencyTitle'),
     body: {
       type: 'doc',
       content: [
@@ -38,7 +38,7 @@ const sections: HomeSection[] = home?.data.sections ?? [
           content: [
             {
               type: 'text',
-              text: 'Keep a lighthouse that floats. Relight a dark coast one beacon at a time, and learn why the lights went out.',
+              text: t('en', 'home.emergencyBody'),
             },
           ],
         },
@@ -53,22 +53,20 @@ const sections: HomeSection[] = home?.data.sections ?? [
 ];
 ---
 
+<!-- Emergency content is used only when the published Home snapshot is missing or invalid. -->
 <Site
   lang="en"
   title="Lumen — Independent game studio"
   description="Lumen makes thoughtful games with a little light in them."
+  overlayHeader
 >
-  {fallback && (
-    <p role="status" class="mx-auto max-w-7xl px-5 py-3 text-sm text-muted-foreground">
-      {t('en', 'home.fallbackNotice')}
-    </p>
-  )}
-  {stale && (
-    <p role="status" class="mx-auto max-w-7xl px-5 py-3 text-sm text-muted-foreground">
-      {t('en', 'home.staleNotice')}
-    </p>
-  )}
   {sections.map((section) => (
-    <Section section={section} lang="en" team={team} />
+    <Section
+      section={section}
+      lang="en"
+      team={team}
+      fallbackNotice={fallback}
+      staleNotice={stale}
+    />
   ))}
 </Site>

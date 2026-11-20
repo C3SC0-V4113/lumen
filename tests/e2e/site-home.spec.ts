@@ -16,6 +16,14 @@ test('renders published home content in both locales and maps the locale switch 
   await expect(
     page.getByRole('heading', { name: 'Un juego tranquilo sobre devolver la luz' })
   ).toBeVisible();
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Parte del contenido se muestra en inglés' })
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('status')
+      .filter({ hasText: 'Parte del contenido traducido podría estar desactualizado' })
+  ).toBeVisible();
   await page.getByRole('combobox', { name: 'Idioma: ES' }).click();
   await page.getByRole('option', { name: 'English' }).click();
   await expect(page).toHaveURL('/');
@@ -81,7 +89,7 @@ test('reduced motion removes hero animations and mobile header opens the sheet m
   await page.goto('/');
   expect(
     await page
-      .locator('.beacon-scene')
+      .locator('.hero-scene')
       .evaluate((element) => element.getAnimations({ subtree: true }).length)
   ).toBe(0);
   await page.getByRole('button', { name: 'Open menu' }).click();

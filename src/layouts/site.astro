@@ -13,8 +13,9 @@ interface Props {
   lang: Locale;
   title: string;
   description: string;
+  overlayHeader?: boolean;
 }
-const { lang, title, description } = Astro.props;
+const { lang, title, description, overlayHeader = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, SITE_URL).toString();
 const english = new URL(getLocalizedPath(Astro.url.pathname, 'en'), SITE_URL).toString();
 const spanish = new URL(getLocalizedPath(Astro.url.pathname, 'es'), SITE_URL).toString();
@@ -55,7 +56,12 @@ const spanish = new URL(getLocalizedPath(Astro.url.pathname, 'es'), SITE_URL).to
     >
       {t(lang, 'common.skipToContent')}
     </a>
-    <header class="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-4 md:px-8">
+    <header
+      class:list={[
+        'z-30 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-4 md:px-8',
+        overlayHeader && 'absolute inset-x-0 top-0',
+      ]}
+    >
       <Logo href={getLocalizedPath('/', lang)} label="Lumen" />
       <div class="flex items-center gap-2 md:gap-6">
         <SiteNav client:load lang={lang} />

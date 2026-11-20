@@ -332,130 +332,401 @@
   }
 }
 
-/* Scoped hero beacon exception from ADR 0002: geometry and beam effects need masks and 3D. */
-@keyframes beacon-sweep {
-  from {
-    transform: rotate(-18deg) scaleX(0.75);
-    opacity: 0.16;
+/* Home lighthouse scene: all animation stays on composite properties. */
+[data-surface='site'] {
+  --hero-sky: oklch(0.891 0.045 216);
+  --hero-orb: oklch(0.962 0.055 89);
+  --hero-orb-glow: color-mix(in oklch, var(--hero-orb) 48%, transparent);
+  --hero-stars: color-mix(in oklch, var(--foreground) 70%, transparent);
+  --hero-wave-one: oklch(0.751 0.078 213);
+  --hero-wave-two: oklch(0.671 0.085 218);
+  --hero-wave-three: oklch(0.571 0.085 222);
+  --hero-dim: color-mix(in oklch, var(--background) 12%, transparent);
+  --hero-tower: oklch(0.961 0.028 81);
+  --hero-red: oklch(0.581 0.161 29);
+}
+[data-surface='site'].dark {
+  --hero-sky: oklch(0.225 0.045 249);
+  --hero-orb: oklch(0.881 0.035 213);
+  --hero-orb-glow: color-mix(in oklch, var(--hero-orb) 30%, transparent);
+  --hero-stars: var(--foreground);
+  --hero-wave-one: oklch(0.311 0.055 237);
+  --hero-wave-two: oklch(0.265 0.051 246);
+  --hero-wave-three: oklch(0.221 0.042 252);
+  --hero-dim: color-mix(in oklch, var(--background) 25%, transparent);
+  --hero-tower: oklch(0.831 0.019 251);
+  --hero-red: oklch(0.571 0.151 29);
+}
+@keyframes hero-rotate {
+  to {
+    transform: rotateY(360deg);
   }
+}
+@keyframes hero-pulse {
   50% {
-    opacity: 0.5;
-  }
-  to {
-    transform: rotate(18deg) scaleX(1);
-    opacity: 0.16;
+    opacity: 0.38;
+    transform: scale(1.08);
   }
 }
-@keyframes beacon-float {
-  from {
-    transform: translateX(-50%) translateY(0);
-  }
-  to {
-    transform: translateX(-50%) translateY(-0.5rem);
+@keyframes hero-swell {
+  50% {
+    transform: translateX(2%) scaleY(1.04);
+    opacity: 0.78;
   }
 }
-@keyframes beacon-wave-drift {
-  from {
-    transform: translateX(-2%);
+@keyframes hero-flash {
+  0%,
+  7%,
+  100% {
+    opacity: 0;
+    transform: scaleX(0.75);
   }
-  to {
-    transform: translateX(2%);
+  2%,
+  5% {
+    opacity: 0.65;
+    transform: scaleX(1);
   }
 }
-@utility beacon-scene {
-  perspective: 50rem;
+.hero-scene {
+  min-height: 54rem;
+  background: linear-gradient(var(--hero-dim), var(--hero-dim)), var(--hero-sky);
   isolation: isolate;
 }
-@utility beacon-stars {
+.hero-stars {
   position: absolute;
   inset: 0;
-  opacity: 0.65;
-  background-image: radial-gradient(circle, var(--lamp) 1px, transparent 1.5px);
-  background-size: 3rem 3rem;
-  mask-image: linear-gradient(to bottom, black, transparent 85%);
+  opacity: 0.52;
+  background-image: radial-gradient(circle, var(--hero-stars) 1px, transparent 1.5px);
+  background-size: 3.25rem 3.25rem;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
 }
-@utility beacon-beam {
+[data-surface='site']:not(.dark) .hero-stars {
+  opacity: 0;
+}
+.hero-orb {
   position: absolute;
-  left: 50%;
+  z-index: 0;
   top: 18%;
-  width: 80%;
-  height: 54%;
-  transform-origin: left center;
-  transform: rotate(-8deg);
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklch, var(--lamp) 58%, transparent),
-    transparent 88%
+  left: 11%;
+  width: clamp(11rem, 25vw, 23rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  color: var(--hero-stars);
+  background: radial-gradient(
+    circle,
+    var(--hero-orb) 0 38%,
+    var(--hero-orb-glow) 58%,
+    transparent 72%
   );
-  clip-path: polygon(0 48%, 100% 0, 100% 100%);
-  opacity: 0.3;
-  animation: beacon-sweep 9s ease-in-out infinite alternate;
+  animation: hero-pulse 8s ease-in-out infinite;
 }
-@utility beacon-tower {
+.hero-dots {
+  position: absolute;
+  inset: -14%;
+  width: 128%;
+  height: 128%;
+  opacity: 0.24;
+  animation: hero-pulse 8s ease-in-out infinite reverse;
+}
+.hero-art {
+  position: absolute;
+  z-index: 1;
+  top: 10%;
+  right: 4%;
+  bottom: 0;
+  width: min(64%, 58rem);
+  perspective: 70rem;
+  overflow: hidden;
+}
+.hero-beam {
   position: absolute;
   z-index: 2;
-  left: 50%;
-  top: 22%;
-  width: 4rem;
-  height: 12rem;
-  transform: translateX(-50%);
-  border-radius: 0.5rem 0.5rem 0.2rem 0.2rem;
-  background: linear-gradient(90deg, var(--secondary), var(--foreground) 50%, var(--secondary));
-  clip-path: polygon(28% 0, 72% 0, 100% 100%, 0 100%);
-  animation: beacon-float 3.5s ease-in-out infinite alternate;
+  left: 51%;
+  top: 23%;
+  width: 78%;
+  height: 45%;
+  transform-origin: left center;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--hero-orb) 58%, transparent),
+    transparent 91%
+  );
+  clip-path: polygon(0 46%, 100% 0, 100% 100%);
+  mask-image: linear-gradient(90deg, black, transparent);
+  animation: hero-rotate 12s linear infinite;
+  transform-style: preserve-3d;
 }
-@utility beacon-lamp {
+.hero-beam-plane {
   position: absolute;
-  left: 23%;
-  top: 7%;
-  width: 54%;
-  height: 15%;
-  border-radius: 0.2rem;
-  background: var(--lamp);
-  box-shadow: 0 0 1.5rem var(--lamp);
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--hero-orb) 50%, transparent),
+    transparent 90%
+  );
+  transform: rotateY(35deg);
 }
-@utility beacon-deck {
+.hero-beam-plane + .hero-beam-plane {
+  transform: rotateY(-35deg);
+  opacity: 0.52;
+}
+.hero-beam-core {
   position: absolute;
-  left: -35%;
-  bottom: 0;
-  width: 170%;
-  height: 0.6rem;
+  left: 0;
+  top: 44%;
+  width: 100%;
+  height: 12%;
+  background: linear-gradient(90deg, var(--hero-orb), transparent);
+  opacity: 0.68;
+}
+.hero-flash {
+  position: absolute;
+  z-index: 3;
+  left: 45%;
+  top: 23%;
+  width: 25%;
+  height: 9%;
   border-radius: 50%;
+  background: var(--hero-orb-glow);
+  filter: blur(1rem);
+  animation: hero-flash 8s ease-in-out infinite;
+}
+.hero-halo {
+  position: absolute;
+  z-index: 3;
+  left: 49%;
+  top: 18%;
+  width: 7rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--hero-orb-glow), transparent 70%);
+}
+.hero-lighthouse {
+  position: absolute;
+  z-index: 5;
+  left: 47%;
+  top: 22%;
+  width: clamp(5rem, 10vw, 8rem);
+  height: clamp(18rem, 36vw, 29rem);
+}
+.hero-roof {
+  position: absolute;
+  top: 4%;
+  left: 15%;
+  width: 70%;
+  height: 7%;
+  background: var(--hero-tower);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.hero-lamp {
+  position: absolute;
+  z-index: 2;
+  top: 10%;
+  left: 22%;
+  width: 56%;
+  height: 8%;
+  border: 0.2rem solid var(--hero-tower);
+  background: var(--hero-orb);
+  box-shadow: 0 0 1.5rem var(--hero-orb-glow);
+}
+.hero-tower {
+  position: absolute;
+  top: 18%;
+  left: 20%;
+  width: 60%;
+  height: 70%;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--hero-tower) 68%, var(--foreground)),
+    var(--hero-tower) 52%,
+    color-mix(in oklch, var(--hero-tower) 60%, var(--background))
+  );
+  clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+}
+.hero-tower i {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 8%;
+  background: var(--hero-red);
+}
+.hero-tower i:first-child {
+  top: 25%;
+}
+.hero-tower i:last-child {
+  top: 68%;
+}
+.hero-deck {
+  position: absolute;
+  z-index: 3;
+  top: 17%;
+  left: 12%;
+  width: 76%;
+  height: 2%;
   background: var(--foreground);
 }
-@utility beacon-wave {
+.hero-base {
   position: absolute;
-  right: -12%;
-  bottom: 10%;
+  left: 4%;
+  bottom: 9%;
+  width: 92%;
+  height: 5%;
+  border-radius: 50%;
+  background: var(--hero-tower);
+}
+.hero-wave {
+  position: absolute;
+  z-index: 4;
   left: -12%;
-  height: 22%;
-  border-top: 1px solid color-mix(in oklch, var(--info) 75%, transparent);
+  right: -4%;
+  bottom: 0;
+  height: 33%;
   border-radius: 50% 50% 0 0;
-  opacity: 0.7;
-  animation: beacon-wave-drift 6s ease-in-out infinite alternate;
+  background: var(--hero-wave-one);
+  opacity: 0.72;
+  animation: hero-swell 11s ease-in-out infinite;
 }
-@utility beacon-wave-one {
-  bottom: 10%;
-}
-@utility beacon-wave-two {
-  bottom: 2%;
-  opacity: 0.45;
-}
-@utility beacon-wave-three {
+.hero-wave-b {
   bottom: -6%;
-  opacity: 0.3;
+  background: var(--hero-wave-two);
+  opacity: 0.72;
+  animation-delay: -3s;
 }
-:root.beacon-paused .beacon-beam {
+.hero-wave-c {
+  bottom: -13%;
+  background: var(--hero-wave-three);
+  opacity: 0.72;
+  animation-delay: -6s;
+}
+.hero-control {
+  left: 62%;
+  top: 32%;
+  display: flex;
+  width: clamp(5rem, 10vw, 8rem);
+  height: clamp(18rem, 36vw, 29rem);
+  align-items: flex-start;
+  justify-content: center;
+  border-radius: 9999px;
+  color: transparent;
+  background: transparent;
+}
+.hero-control-tower {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.hero-tower-fill {
+  fill: var(--hero-tower);
+}
+.hero-tower-band {
+  fill: var(--hero-red);
+}
+.hero-roof-fill {
+  fill: var(--hero-tower);
+}
+.hero-lamp-fill {
+  fill: var(--hero-orb);
+  stroke: var(--hero-tower);
+  stroke-width: 3;
+}
+.hero-tower-line {
+  fill: none;
+  stroke: var(--foreground);
+  stroke-width: 3;
+}
+.hero-control-ring {
+  position: absolute;
+  inset: -0.8rem;
+  border: 1px solid color-mix(in oklch, var(--hero-orb) 70%, transparent);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.hero-control:hover .hero-control-ring,
+.hero-control:focus-visible .hero-control-ring {
+  opacity: 1;
+}
+.hero-control:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 0.4rem;
+}
+.hero-control-ring,
+.hero-control-tip {
+  transition-property: opacity;
+  transition-duration: 0.2s;
+}
+.hero-control-tip {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 0.75rem);
+  width: max-content;
+  border-radius: 0.5rem;
+  background: var(--background);
+  padding: 0.5rem 0.75rem;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.hero-control:hover .hero-control-tip,
+.hero-control:focus-visible .hero-control-tip {
+  opacity: 1;
+}
+@media (max-width: 48rem) {
+  .hero-scene {
+    padding-top: 8rem;
+  }
+  .hero-art {
+    top: 37%;
+    right: -14%;
+    bottom: 0;
+    width: 100%;
+    height: 63%;
+  }
+  .hero-orb {
+    top: 42%;
+    left: 5%;
+    width: 10rem;
+  }
+  .hero-control {
+    left: 69%;
+    top: 49%;
+    width: 5rem;
+    height: 18rem;
+  }
+  .hero-beam {
+    left: 58%;
+    top: 20%;
+    width: 80%;
+  }
+}
+:root.beacon-paused .hero-beam,
+:root.beacon-paused .hero-flash {
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce) {
-  .beacon-beam,
-  .beacon-tower,
-  .beacon-wave {
+  .hero-orb,
+  .hero-dots,
+  .hero-beam,
+  .hero-flash,
+  .hero-wave {
     animation: none !important;
+    transition: none !important;
   }
-  .beacon-beam {
-    transform: rotate(-8deg);
-    opacity: 0.22;
+  .hero-control-ring,
+  .hero-control-tip {
+    transition: none !important;
   }
+  .hero-beam {
+    transform: rotateY(24deg);
+    opacity: 0.24;
+  }
+}
+
+@utility aspect-portrait {
+  aspect-ratio: 4 / 5;
+}
+
+@utility hero-wave-a {
+  bottom: 0;
 }
