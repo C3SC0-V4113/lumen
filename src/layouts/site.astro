@@ -1,0 +1,82 @@
+---
+import '../styles/global.css';
+
+import { SITE_URL } from 'astro:env/server';
+
+import { FlashToast } from '../components/common/flash-toast';
+import Logo from '../components/common/logo.astro';
+import Prefs from '../components/common/prefs';
+import { SiteNav } from '../components/common/site-nav';
+import { t, getLocalizedPath, type Locale } from '../i18n';
+
+interface Props {
+  lang: Locale;
+  title: string;
+  description: string;
+}
+const { lang, title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, SITE_URL).toString();
+const english = new URL(getLocalizedPath(Astro.url.pathname, 'en'), SITE_URL).toString();
+const spanish = new URL(getLocalizedPath(Astro.url.pathname, 'es'), SITE_URL).toString();
+---
+
+<html lang={lang} data-surface="site">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en" href={english} />
+    <link rel="alternate" hreflang="es" href={spanish} />
+    <link rel="alternate" hreflang="x-default" href={english} />
+    <script is:inline>
+      (() => {
+        const surface = document.documentElement.dataset.surface;
+        const fallback = surface === 'site' ? 'dark' : 'light';
+        const key = `lumen:${surface}:theme`;
+        try {
+          const stored = localStorage.getItem(key);
+          document.documentElement.classList.toggle(
+            'dark',
+            stored === 'dark' || (stored !== 'light' && fallback === 'dark')
+          );
+        } catch {
+          document.documentElement.classList.toggle('dark', fallback === 'dark');
+        }
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
+    >
+      {t(lang, 'common.skipToContent')}
+    </a>
+    <header class="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-4 md:px-8">
+      <Logo href={getLocalizedPath('/', lang)} label="Lumen" />
+      <div class="flex items-center gap-2 md:gap-6">
+        <SiteNav client:load lang={lang} />
+        <Prefs client:load lang={lang} surface="site" />
+        <a
+          href={getLocalizedPath('/driftlight', lang) + '#wishlist'}
+          class="hidden rounded-lg bg-lamp px-4 py-2 text-sm font-semibold text-lamp-foreground md:inline-flex"
+        >
+          {t(lang, 'home.wishlist')}
+        </a>
+      </div>
+    </header>
+    <main id="main-content" tabindex="-1">
+      <slot />
+    </main>
+    <footer class="border-t border-border px-5 py-8 text-sm text-muted-foreground md:px-8">
+      <div class="mx-auto flex max-w-7xl flex-col justify-between gap-3 md:flex-row">
+        <p>{t(lang, 'home.fictionalNotice')}</p>
+        <p>{t(lang, 'home.credit')}</p>
+      </div>
+    </footer>
+    <FlashToast client:idle lang={lang} />
+  </body>
+</html>
