@@ -1,0 +1,113 @@
+---
+import { BeaconControl } from './beacon-control';
+import RichText from '../../../components/common/rich-text.astro';
+import { t, type Locale } from '../../../i18n';
+
+import type { HomeSection } from '../shared/section-colors';
+interface Props {
+  section: HomeSection;
+  lang: Locale;
+  fallbackNotice?: boolean;
+  staleNotice?: boolean;
+}
+const { section, lang, fallbackNotice = false, staleNotice = false } = Astro.props;
+---
+
+<section
+  data-hero="scene"
+  class="relative isolate min-h-240 overflow-hidden bg-hero-sky px-5 pb-16 pt-32 text-foreground hero:min-h-216 hero:px-8 hero:pt-40"
+  aria-labelledby="home-title"
+>
+  <div
+    data-hero="stars"
+    class="star-field absolute inset-0 opacity-0 dark:opacity-50"
+    aria-hidden="true"
+  ></div>
+  <div
+    data-hero="orb"
+    class="absolute top-128 left-3/4 aspect-square w-22 rounded-full bg-radial from-hero-orb from-40% via-hero-orb-glow via-60% to-transparent to-75% text-hero-stars animate-hero-pulse beacon-paused:paused motion-reduce:animate-none max-tiny:left-full hero:top-38 hero:right-1/6 hero:left-auto"
+    aria-hidden="true"
+  >
+    <svg
+      data-hero="dots"
+      class="absolute -inset-1/6 size-4/3 animate-hero-pulse-reverse beacon-paused:paused opacity-25 motion-reduce:animate-none"
+      viewBox="0 0 400 400"
+    >
+      <defs>
+        <pattern id="dots" width="9" height="9" patternUnits="userSpaceOnUse">
+          <circle cx="1" cy="1" r="1" fill="currentColor" />
+        </pattern>
+      </defs>
+      <circle cx="200" cy="200" r="190" fill="url(#dots)" />
+    </svg>
+  </div>
+  <div
+    data-hero="art"
+    class="absolute top-1/3 right-0 bottom-0 z-1 h-2/3 w-full overflow-hidden perspective-distant tiny:-right-1/6 hero:top-1/10 hero:right-1/25 hero:h-auto hero:w-2/3 hero:max-w-232"
+    aria-hidden="true"
+  >
+    <div
+      data-hero="beam"
+      class="beam-shape absolute top-1/5 left-3/5 z-2 h-1/2 w-4/5 origin-left animate-hero-rotate bg-linear-to-r from-hero-orb/60 to-transparent beam-mask transform-3d beacon-paused:paused motion-reduce:animate-none motion-reduce:rotate-y-25 motion-reduce:opacity-25 max-tiny:left-7/8 hero:top-7/30 hero:left-11/20 hero:w-4/5"
+    >
+      <span class="absolute inset-0 rotate-y-35 bg-linear-to-r from-hero-orb/50 to-transparent"></span>
+      <span class="absolute inset-0 -rotate-y-35 bg-linear-to-r from-hero-orb/50 to-transparent opacity-50"></span>
+      <span class="absolute top-5/12 left-0 h-1/8 w-full bg-linear-to-r from-hero-orb to-transparent opacity-70"></span>
+    </div>
+  </div>
+  <div
+    data-hero="wave-a"
+    class="absolute top-184 -right-1/20 -left-1/20 z-4 h-30 animate-hero-swell beacon-paused:paused wave-crest bg-hero-wave-one opacity-70 motion-reduce:animate-none hero:top-152"
+    aria-hidden="true"
+  ></div>
+  <div
+    data-hero="wave-b"
+    class="absolute top-196 -right-1/20 -left-1/20 z-4 h-30 animate-hero-swell-b beacon-paused:paused wave-crest bg-hero-wave-two opacity-70 motion-reduce:animate-none hero:top-165"
+    aria-hidden="true"
+  ></div>
+  <div
+    data-hero="wave-c"
+    class="absolute top-208 -right-1/20 -left-1/20 z-4 h-30 animate-hero-swell-c beacon-paused:paused wave-crest bg-hero-wave-three opacity-70 motion-reduce:animate-none hero:top-180"
+    aria-hidden="true"
+  ></div>
+  <div class="relative z-10 mx-auto max-w-7xl">
+    <div data-hero="copy" class="max-w-64 hero:max-w-2xl space-y-6">
+      {fallbackNotice && (
+        <p role="status" class="max-w-prose text-sm text-muted-foreground">
+          {t(lang, 'home.fallbackNotice')}
+        </p>
+      )}
+      {staleNotice && (
+        <p role="status" class="max-w-prose text-sm text-muted-foreground">
+          {t(lang, 'home.staleNotice')}
+        </p>
+      )}
+      <p class="font-mono text-xs tracking-widest text-primary">{t(lang, 'home.gameEyebrow')}</p>
+      <h1 id="home-title" class="font-heading text-6xl leading-none hero:text-8xl">
+        {section.heading ?? ''}
+      </h1>
+      {section.body && (
+        <div class="max-w-prose space-y-4 text-lg leading-relaxed text-muted-foreground">
+          <RichText value={section.body} />
+        </div>
+      )}
+      <div class="flex flex-wrap gap-3">
+        <a
+          id="wishlist"
+          class="rounded-lg bg-lamp px-5 py-3 font-semibold text-lamp-foreground"
+          href="#wishlist"
+        >
+          {t(lang, 'home.wishlist')}
+        </a>
+        <a
+          class="rounded-lg border border-border bg-background/50 px-5 py-3 font-semibold"
+          href="#about"
+        >
+          {t(lang, 'home.demo')}
+        </a>
+      </div>
+      <p class="text-sm text-muted-foreground">{t(lang, 'home.release')}</p>
+    </div>
+  </div>
+  <BeaconControl client:load lang={lang} />
+</section>

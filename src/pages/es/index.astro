@@ -1,16 +1,70 @@
 ---
-import Logo from '../../components/common/logo.astro';
+import { env } from 'cloudflare:workers';
+
+import { getDb } from '../../db';
+import Section from '../../features/home/components/section.astro';
+import { getPublishedHome } from '../../features/home/server/queries';
+import { getHomePresentation } from '../../features/home/shared/presentation';
+import { listPublishedTeam } from '../../features/team/server/queries';
 import { t } from '../../i18n';
-import Layout from '../../layouts/main.astro';
+import Site from '../../layouts/site.astro';
+
+import type { HomeSection } from '../../features/home/shared/section-colors';
+
+let home: Awaited<ReturnType<typeof getPublishedHome>> = null;
+let team: Awaited<ReturnType<typeof listPublishedTeam>> = [];
+try {
+  const db = getDb(env.DB);
+  home = await getPublishedHome(db, 'es');
+  team = await listPublishedTeam(db, 'es');
+} catch {
+  // El contenido localizado de emergencia de Inicio cubre la falta del enlace a la base de datos.
+}
+const { teamPreview, fallback, stale } = getHomePresentation(home, team);
+const sections: HomeSection[] = home?.data.sections ?? [
+  {
+    id: 'fallback-hero',
+    kind: 'hero',
+    sortOrder: 0,
+    hidden: false,
+    heading: t('es', 'home.emergencyTitle'),
+    body: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: t('es', 'home.emergencyBody'),
+            },
+          ],
+        },
+      ],
+    },
+    bgLight: 'paper',
+    fgLight: 'ink',
+    bgDark: 'night',
+    fgDark: 'cream',
+    items: [],
+  },
+];
 ---
 
-<Layout lang="es" surface="site" title="Lumen — Estudio independiente">
-  <Logo slot="brand" href="/es" label="Lumen" />
-  <section class="mx-auto flex min-h-[65vh] max-w-6xl flex-col justify-center px-6 py-20">
-    <p class="mb-4 text-sm font-medium tracking-wide text-primary">{t('es', 'home.eyebrow')}</p>
-    <h1 class="max-w-3xl text-5xl leading-tight md:text-7xl">{t('es', 'home.title')}</h1>
-    <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-      {t('es', 'home.description')}
-    </p>
-  </section>
-</Layout>
+<!-- Este contenido de emergencia solo se usa si falta la instantánea publicada de Inicio o no es válida. -->
+<Site
+  lang="es"
+  title="Lumen — Estudio independiente"
+  description="Lumen crea juegos con intención y un poco de luz."
+  overlayHeader
+>
+  {sections.map((section) => (
+    <Section
+      section={section}
+      lang="es"
+      team={teamPreview}
+      fallbackNotice={fallback}
+      staleNotice={stale}
+    />
+  ))}
+</Site>

@@ -100,7 +100,7 @@ const eslintConfig = defineConfig([
     ...playwrightPlugin.configs['flat/recommended'],
   },
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    files: ['**/*.{js,jsx,ts,tsx,astro}'],
     plugins: { shadcn },
     settings: { shadcn: { note: 'See DESIGN.md for the design system rules.' } },
     rules: {

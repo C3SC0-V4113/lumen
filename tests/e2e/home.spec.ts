@@ -5,7 +5,17 @@ function captureDiagnostics(page: Page) {
   const errors: string[] = [];
   const pageErrors: string[] = [];
   page.on('console', (message) => {
-    if (message.type() === 'warning') warnings.push(message.text());
+    if (
+      message.type() === 'warning' &&
+      !message
+        .text()
+        .startsWith(
+          'This document is not cross-origin isolated because the Cross-Origin-Embedder-Policy header is missing'
+        )
+    ) {
+      // WebKit warns about SharedArrayBuffer when COEP is absent; ADR 0004 intentionally omits COEP.
+      warnings.push(message.text());
+    }
     if (message.type() === 'error') errors.push(message.text());
   });
   page.on('pageerror', (error) => pageErrors.push(error.message));
@@ -60,7 +70,7 @@ test('renders localized home pages, preserves URL parts, and persists the theme'
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(languageControl).toHaveAccessibleName('Language: EN');
   await expect(languageControl.locator('[data-slot="select-value"]')).toHaveText('EN');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Stories for curious minds.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Driftlight');
   await expect(page.locator('html')).toHaveClass(/dark/);
 
   const themeToggle = page.getByRole('button', { name: 'Dark theme', pressed: true });
@@ -89,9 +99,7 @@ test('renders localized home pages, preserves URL parts, and persists the theme'
   const spanishLanguageControl = page.getByRole('combobox', { name: 'Idioma' });
   await expect(spanishLanguageControl).toHaveAccessibleName('Idioma: ES');
   await expect(spanishLanguageControl.locator('[data-slot="select-value"]')).toHaveText('ES');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Historias para mentes curiosas.'
-  );
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Driftlight');
   expect(diagnostics.warnings).toEqual([]);
   expect(diagnostics.errors).toEqual([]);
   expect(diagnostics.pageErrors).toEqual([]);

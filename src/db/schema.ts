@@ -369,8 +369,12 @@ export const homeSectionItem = sqliteTable(
       .notNull()
       .references(() => homeSection.id, { onDelete: 'cascade' }),
     sortOrder: integer('sort_order').notNull(),
+    state: enumText('state', 'homeItemState'),
   },
-  (t) => [index('home_section_item_order_idx').on(t.sectionId, t.sortOrder)]
+  (t) => [
+    nullableEnumCheck('home_section_item_state_check', t.state, 'homeItemState'),
+    index('home_section_item_order_idx').on(t.sectionId, t.sortOrder),
+  ]
 );
 export const homeSectionItemTranslation = sqliteTable(
   'home_section_item_translation',

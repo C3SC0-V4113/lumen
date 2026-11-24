@@ -5,6 +5,7 @@ import {
   darkBackgrounds,
   disciplines,
   jobStates,
+  homeItemStates,
   linkKinds,
   lightBackgrounds,
   milestoneStates,
@@ -111,7 +112,13 @@ export const homeSchema = z.strictObject({
       fgLight: z.enum(textColors).nullable(),
       bgDark: z.enum(darkBackgrounds).nullable(),
       fgDark: z.enum(textColors).nullable(),
-      items: z.array(z.strictObject({ title: z.string(), body: z.string() })),
+      items: z.array(
+        z.strictObject({
+          title: z.string(),
+          body: z.string(),
+          state: z.enum(homeItemStates).nullable().optional(),
+        })
+      ),
     })
   ),
 });

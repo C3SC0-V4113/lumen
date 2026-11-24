@@ -64,6 +64,26 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-hero-sky: var(--hero-sky);
+  --color-hero-orb: var(--hero-orb);
+  --color-hero-orb-glow: var(--hero-orb-glow);
+  --color-hero-stars: var(--hero-stars);
+  --color-hero-wave-one: var(--hero-wave-one);
+  --color-hero-wave-two: var(--hero-wave-two);
+  --color-hero-wave-three: var(--hero-wave-three);
+  --color-hero-tower: var(--hero-tower);
+  --color-hero-red: var(--hero-red);
+  --animate-hero-rotate: hero-rotate 12s linear infinite;
+  --animate-hero-pulse: hero-pulse 8s ease-in-out infinite;
+  --animate-hero-pulse-reverse: hero-pulse 8s ease-in-out infinite reverse;
+  --animate-hero-swell: hero-swell 11s ease-in-out infinite;
+  --animate-hero-swell-b: hero-swell 11s ease-in-out -3s infinite;
+  --animate-hero-swell-c: hero-swell 11s ease-in-out -6s infinite;
+  /* This narrow breakpoint keeps the lighthouse visible on very small screens. */
+  --breakpoint-tiny: 22.5rem;
+  /* The original mobile layout includes the 768px viewport. */
+  --breakpoint-hero: 48.0625rem;
+
   --font-heading: 'Fraunces Variable', Georgia, serif;
   --font-sans: 'Instrument Sans Variable', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -330,4 +350,80 @@
     letter-spacing: -0.02em;
     text-wrap: balance;
   }
+}
+
+/* Home lighthouse scene: all animation stays on composite properties. */
+[data-surface='site'] {
+  --hero-sky: oklch(0.891 0.045 216);
+  --hero-orb: oklch(0.962 0.055 89);
+  --hero-orb-glow: color-mix(in oklch, var(--hero-orb) 48%, transparent);
+  --hero-stars: color-mix(in oklch, var(--foreground) 70%, transparent);
+  --hero-wave-one: oklch(0.751 0.078 213);
+  --hero-wave-two: oklch(0.671 0.085 218);
+  --hero-wave-three: oklch(0.571 0.085 222);
+  --hero-dim: color-mix(in oklch, var(--background) 12%, transparent);
+  --hero-tower: oklch(0.961 0.028 81);
+  --hero-red: oklch(0.581 0.161 29);
+}
+[data-surface='site'].dark {
+  --hero-sky: oklch(0.225 0.045 249);
+  --hero-orb: oklch(0.881 0.035 213);
+  --hero-orb-glow: color-mix(in oklch, var(--hero-orb) 30%, transparent);
+  --hero-stars: var(--foreground);
+  --hero-wave-one: oklch(0.311 0.055 237);
+  --hero-wave-two: oklch(0.265 0.051 246);
+  --hero-wave-three: oklch(0.221 0.042 252);
+  --hero-dim: color-mix(in oklch, var(--background) 25%, transparent);
+  --hero-tower: oklch(0.831 0.019 251);
+  --hero-red: oklch(0.571 0.151 29);
+}
+@keyframes hero-rotate {
+  to {
+    transform: rotateY(360deg);
+  }
+}
+@keyframes hero-pulse {
+  50% {
+    opacity: 0.38;
+    transform: scale(1.08);
+  }
+}
+@keyframes hero-swell {
+  50% {
+    transform: translateX(2%) scaleY(1.04);
+    opacity: 0.78;
+  }
+}
+@utility aspect-portrait {
+  aspect-ratio: 4 / 5;
+}
+
+/* The beam's triangular silhouette has no built-in shape utility. */
+@utility beam-shape {
+  clip-path: polygon(0 46%, 100% 0, 100% 100%);
+}
+
+/* The repeating stars need a fixed two-stop dot pattern. */
+@utility star-field {
+  background-image: radial-gradient(circle, var(--hero-stars) 1px, transparent 1.5px);
+  background-size: 3.25rem 3.25rem;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+/* The stored preference is set on the root before the island hydrates. */
+@custom-variant beacon-paused (&:is(.beacon-paused *));
+
+/* Tailwind has no animation play-state utility. */
+@utility paused {
+  animation-play-state: paused;
+}
+
+/* A directional fade preserves the beam silhouette. */
+@utility beam-mask {
+  mask-image: linear-gradient(to right, black, transparent);
+}
+
+/* The sea crest uses an elliptical top edge, rather than a pill radius. */
+@utility wave-crest {
+  border-radius: 50% 50% 0 0;
 }
