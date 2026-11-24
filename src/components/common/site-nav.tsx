@@ -38,7 +38,7 @@ export function SiteNav({ lang }: { lang: Locale }) {
               />
             }
           >
-            <Menu aria-hidden="true" />
+            <Menu aria-hidden="true" data-icon="inline-start" />
           </SheetTrigger>
           <SheetContent side="right">
             <div className="space-y-4 p-6">

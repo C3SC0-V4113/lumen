@@ -14,26 +14,9 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-      testIgnore: '**/screenshots.spec.ts',
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-      testIgnore: '**/screenshots.spec.ts',
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-      testIgnore: '**/screenshots.spec.ts',
-    },
-    {
-      name: 'screenshots',
-      use: { ...devices['Desktop Chrome'] },
-      testMatch: '**/screenshots.spec.ts',
-    },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {
     command:

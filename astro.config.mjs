@@ -20,7 +20,10 @@ export default defineConfig({
       algorithm: 'SHA-256',
       scriptDirective: {
         resources: ["'self'"],
-        hashes: ['sha256-Az1ObD1cVxP1Z6jWBXHWKWoHXWBTKf6a4jWsIBWz6Rc='],
+        hashes: [
+          'sha256-Az1ObD1cVxP1Z6jWBXHWKWoHXWBTKf6a4jWsIBWz6Rc=',
+          'sha256-mdTJNUq4K8XN9d5VnRMQReJGanV01W3SFwnWiJfJww0=',
+        ],
       },
       styleDirective: {
         hashes: [

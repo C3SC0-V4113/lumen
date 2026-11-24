@@ -45,6 +45,14 @@ const spanish = new URL(getLocalizedPath(Astro.url.pathname, 'es'), SITE_URL).to
         } catch {
           document.documentElement.classList.toggle('dark', fallback === 'dark');
         }
+        try {
+          document.documentElement.classList.toggle(
+            'beacon-paused',
+            localStorage.getItem('lumen:beacon-paused') === 'true'
+          );
+        } catch {
+          // The default is an active beacon when storage is unavailable.
+        }
       })();
     </script>
     <slot name="head" />

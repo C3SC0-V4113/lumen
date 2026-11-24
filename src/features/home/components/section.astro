@@ -1,4 +1,6 @@
 ---
+import { ArrowRight } from 'lucide-react';
+
 import Hero from './hero.astro';
 import { TeamAvatar } from './team-avatar';
 import RichText from '../../../components/common/rich-text.astro';
@@ -49,7 +51,8 @@ const items = section.items;
           <div class="flex flex-wrap items-end justify-between gap-5">
             <h2 class="max-w-2xl text-4xl md:text-5xl">{title}</h2>
             <a class="font-semibold text-primary" href={lang === 'es' ? '/es/team' : '/team'}>
-              {t(lang, 'home.meetTeam')}
+              {t(lang, 'home.meetTeam')}{' '}
+              <ArrowRight data-icon="inline-end" aria-hidden="true" className="inline size-4" />
             </a>
           </div>
           <ul class="grid grid-cols-2 gap-5 sm:grid-cols-4">

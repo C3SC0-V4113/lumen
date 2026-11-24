@@ -64,6 +64,26 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-hero-sky: var(--hero-sky);
+  --color-hero-orb: var(--hero-orb);
+  --color-hero-orb-glow: var(--hero-orb-glow);
+  --color-hero-stars: var(--hero-stars);
+  --color-hero-wave-one: var(--hero-wave-one);
+  --color-hero-wave-two: var(--hero-wave-two);
+  --color-hero-wave-three: var(--hero-wave-three);
+  --color-hero-tower: var(--hero-tower);
+  --color-hero-red: var(--hero-red);
+  --animate-hero-rotate: hero-rotate 12s linear infinite;
+  --animate-hero-pulse: hero-pulse 8s ease-in-out infinite;
+  --animate-hero-pulse-reverse: hero-pulse 8s ease-in-out infinite reverse;
+  --animate-hero-swell: hero-swell 11s ease-in-out infinite;
+  --animate-hero-swell-b: hero-swell 11s ease-in-out -3s infinite;
+  --animate-hero-swell-c: hero-swell 11s ease-in-out -6s infinite;
+  /* This narrow breakpoint keeps the lighthouse visible on very small screens. */
+  --breakpoint-tiny: 22.5rem;
+  /* The original mobile layout includes the 768px viewport. */
+  --breakpoint-hero: 48.0625rem;
+
   --font-heading: 'Fraunces Variable', Georgia, serif;
   --font-sans: 'Instrument Sans Variable', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -374,294 +394,36 @@
     opacity: 0.78;
   }
 }
-.hero-scene {
-  min-height: 54rem;
-  background: var(--hero-sky);
-  isolation: isolate;
-}
-.hero-stars {
-  position: absolute;
-  inset: 0;
-  opacity: 0.52;
-  background-image: radial-gradient(circle, var(--hero-stars) 1px, transparent 1.5px);
-  background-size: 3.25rem 3.25rem;
-  mask-image: linear-gradient(to bottom, black, transparent 88%);
-}
-[data-surface='site']:not(.dark) .hero-stars {
-  opacity: 0;
-}
-.hero-orb {
-  position: absolute;
-  z-index: 0;
-  top: 9.375rem;
-  right: 16%;
-  width: 5.625rem;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  color: var(--hero-stars);
-  background: radial-gradient(
-    circle,
-    var(--hero-orb) 0 38%,
-    var(--hero-orb-glow) 58%,
-    transparent 72%
-  );
-  animation: hero-pulse 8s ease-in-out infinite;
-}
-.hero-dots {
-  position: absolute;
-  inset: -14%;
-  width: 128%;
-  height: 128%;
-  opacity: 0.24;
-  animation: hero-pulse 8s ease-in-out infinite reverse;
-}
-.hero-art {
-  position: absolute;
-  z-index: 1;
-  top: 10%;
-  right: 4%;
-  bottom: 0;
-  width: min(64%, 58rem);
-  perspective: 70rem;
-  overflow: hidden;
-}
-.hero-beam {
-  position: absolute;
-  z-index: 2;
-  left: 51%;
-  top: 23%;
-  width: 78%;
-  height: 45%;
-  transform-origin: left center;
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklch, var(--hero-orb) 58%, transparent),
-    transparent 91%
-  );
-  clip-path: polygon(0 46%, 100% 0, 100% 100%);
-  mask-image: linear-gradient(90deg, black, transparent);
-  animation: hero-rotate 12s linear infinite;
-  transform-style: preserve-3d;
-}
-.hero-beam-plane {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklch, var(--hero-orb) 50%, transparent),
-    transparent 90%
-  );
-  transform: rotateY(35deg);
-}
-.hero-beam-plane + .hero-beam-plane {
-  transform: rotateY(-35deg);
-  opacity: 0.52;
-}
-.hero-beam-core {
-  position: absolute;
-  left: 0;
-  top: 44%;
-  width: 100%;
-  height: 12%;
-  background: linear-gradient(90deg, var(--hero-orb), transparent);
-  opacity: 0.68;
-}
-.hero-wave {
-  position: absolute;
-  z-index: 4;
-  left: -5%;
-  right: -5%;
-  height: 7.5rem;
-  border-radius: 50% 50% 0 0;
-  background: var(--hero-wave-one);
-  opacity: 0.72;
-  animation: hero-swell 11s ease-in-out infinite;
-}
-.hero-wave-b {
-  background: var(--hero-wave-two);
-  opacity: 0.72;
-  animation-delay: -3s;
-}
-.hero-wave-c {
-  background: var(--hero-wave-three);
-  opacity: 0.72;
-  animation-delay: -6s;
-}
-.hero-control {
-  left: 62%;
-  top: 32%;
-  display: flex;
-  width: clamp(5rem, 10vw, 8rem);
-  height: clamp(18rem, 36vw, 29rem);
-  align-items: flex-start;
-  justify-content: center;
-  border-radius: 9999px;
-  color: transparent;
-  background: transparent;
-}
-.hero-control-tower {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.hero-tower-fill {
-  fill: var(--hero-tower);
-}
-.hero-tower-band {
-  fill: var(--hero-red);
-}
-.hero-roof-fill {
-  fill: var(--hero-tower);
-}
-.hero-lamp-fill {
-  fill: var(--hero-orb);
-  stroke: var(--hero-tower);
-  stroke-width: 3;
-}
-.hero-tower-line {
-  fill: none;
-  stroke: var(--foreground);
-  stroke-width: 3;
-}
-.hero-control-ring {
-  position: absolute;
-  inset: -0.8rem;
-  border: 1px solid color-mix(in oklch, var(--hero-orb) 70%, transparent);
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.hero-control:hover .hero-control-ring,
-.hero-control:focus-visible .hero-control-ring {
-  opacity: 1;
-}
-.hero-control:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 0.4rem;
-}
-.hero-control-ring,
-.hero-control-tip {
-  transition-property: opacity;
-  transition-duration: 0.2s;
-}
-.hero-control-tip {
-  position: absolute;
-  top: 50%;
-  left: calc(100% + 0.75rem);
-  width: max-content;
-  border-radius: 0.5rem;
-  background: var(--background);
-  padding: 0.5rem 0.75rem;
-  color: var(--foreground);
-  font-size: 0.75rem;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.hero-control:hover .hero-control-tip,
-.hero-control:focus-visible .hero-control-tip {
-  opacity: 1;
-}
-@media (max-width: 48rem) {
-  .hero-copy {
-    max-width: 16rem;
-  }
-  .hero-scene {
-    min-height: 60rem;
-    padding-top: 8rem;
-  }
-  .hero-art {
-    top: 37%;
-    right: -14%;
-    bottom: 0;
-    width: 100%;
-    height: 63%;
-  }
-  .hero-orb {
-    top: 32rem;
-    right: auto;
-    left: 75%;
-  }
-  .hero-control {
-    left: 69%;
-    top: 49%;
-    width: 5rem;
-    height: 18rem;
-  }
-  .hero-beam {
-    left: 58%;
-    top: 20%;
-    width: 80%;
-  }
-  .hero-wave-a {
-    top: 46rem;
-  }
-  .hero-wave-b {
-    top: 49rem;
-  }
-  .hero-wave-c {
-    top: 52rem;
-  }
-}
-@media (max-width: 22.5rem) {
-  .hero-art {
-    right: 0;
-    left: 0;
-  }
-  .hero-orb {
-    left: 97%;
-  }
-  .hero-control {
-    top: 56%;
-    left: 85%;
-    width: 3.5rem;
-    height: 18rem;
-  }
-  .hero-beam {
-    left: 88%;
-  }
-  .hero-wave-a {
-    top: 46rem;
-  }
-  .hero-wave-b {
-    top: 49rem;
-  }
-  .hero-wave-c {
-    top: 52rem;
-  }
-}
-:root.beacon-paused .hero-beam {
-  animation-play-state: paused;
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-orb,
-  .hero-dots,
-  .hero-beam,
-  .hero-wave {
-    animation: none !important;
-    transition: none !important;
-  }
-  .hero-control-ring,
-  .hero-control-tip {
-    transition: none !important;
-  }
-  .hero-beam {
-    transform: rotateY(24deg);
-    opacity: 0.24;
-  }
-}
-
 @utility aspect-portrait {
   aspect-ratio: 4 / 5;
 }
 
-@utility hero-wave-a {
-  top: 38.125rem;
+/* The beam's triangular silhouette has no built-in shape utility. */
+@utility beam-shape {
+  clip-path: polygon(0 46%, 100% 0, 100% 100%);
 }
 
-@utility hero-wave-b {
-  top: 41.25rem;
+/* The repeating stars need a fixed two-stop dot pattern. */
+@utility star-field {
+  background-image: radial-gradient(circle, var(--hero-stars) 1px, transparent 1.5px);
+  background-size: 3.25rem 3.25rem;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
 }
 
-@utility hero-wave-c {
-  top: 45rem;
+/* The stored preference is set on the root before the island hydrates. */
+@custom-variant beacon-paused (&:is(.beacon-paused *));
+
+/* Tailwind has no animation play-state utility. */
+@utility paused {
+  animation-play-state: paused;
+}
+
+/* A directional fade preserves the beam silhouette. */
+@utility beam-mask {
+  mask-image: linear-gradient(to right, black, transparent);
+}
+
+/* The sea crest uses an elliptical top edge, rather than a pill radius. */
+@utility wave-crest {
+  border-radius: 50% 50% 0 0;
 }

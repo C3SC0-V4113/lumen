@@ -48,7 +48,7 @@ test('hero copy keeps AA contrast and stays clear of the orb across themes and w
         await page.evaluate((value) => localStorage.setItem('lumen:site:theme', value), theme);
         await page.reload();
 
-        const report = await page.locator('.hero-scene').evaluate((hero) => {
+        const report = await page.locator('[data-hero="scene"]').evaluate((hero) => {
           const toRgb = (value: string) => {
             const oklch = value.match(/oklch\(([\d.]+%?)\s+([\d.]+)\s+([\d.]+)/);
             if (oklch) {
@@ -86,7 +86,9 @@ test('hero copy keeps AA contrast and stays clear of the orb across themes and w
           };
           const heroSky = toRgb(getComputedStyle(hero).getPropertyValue('--hero-sky'));
           const samples = Array.from(
-            hero.querySelectorAll('.hero-copy h1, .hero-copy p, .hero-copy a')
+            hero.querySelectorAll(
+              '[data-hero="copy"] h1, [data-hero="copy"] p, [data-hero="copy"] a'
+            )
           ).map((element) => {
             const color = getComputedStyle(element).color;
             const foreground = luminance(toRgb(color));
@@ -103,13 +105,15 @@ test('hero copy keeps AA contrast and stays clear of the orb across themes and w
               ratio: (Math.max(foreground, base) + 0.05) / (Math.min(foreground, base) + 0.05),
             };
           });
-          const copy = hero.querySelector('.hero-copy')?.getBoundingClientRect();
-          const dots = hero.querySelector('.hero-dots')?.getBoundingClientRect();
-          const firstWave = hero.querySelector('.hero-wave-a')?.getBoundingClientRect();
+          const copy = hero.querySelector('[data-hero="copy"]')?.getBoundingClientRect();
+          const dots = hero.querySelector('[data-hero="dots"]')?.getBoundingClientRect();
+          const firstWave = hero.querySelector('[data-hero="wave-a"]')?.getBoundingClientRect();
           const tower = hero
-            .querySelector('.hero-control-tower .hero-tower-fill')
+            .querySelector('[data-hero="tower"] [data-hero="tower-fill"]')
             ?.getBoundingClientRect();
-          const copyElements = Array.from(hero.querySelectorAll('.hero-copy h1, .hero-copy p'));
+          const copyElements = Array.from(
+            hero.querySelectorAll('[data-hero="copy"] h1, [data-hero="copy"] p')
+          );
           const lighthouseClear =
             !!tower &&
             copyElements.every((element) => {
@@ -215,7 +219,7 @@ test('reduced motion removes hero animations and mobile header opens the sheet m
   await page.goto('/');
   expect(
     await page
-      .locator('.hero-scene')
+      .locator('[data-hero="scene"]')
       .evaluate((element) => element.getAnimations({ subtree: true }).length)
   ).toBe(0);
   await page.getByRole('button', { name: 'Open menu' }).click();

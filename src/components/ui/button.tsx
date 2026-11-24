@@ -14,7 +14,7 @@ const buttonVariants = cva(
         control:
           'border-control-line bg-transparent text-foreground hover:bg-foreground/8 forced-colors:border-[ButtonText]',
         beacon:
-          'hero-control absolute z-20 border-0 bg-transparent p-0 text-transparent hover:bg-transparent',
+          'absolute z-20 rounded-full border-0 bg-transparent p-0 text-transparent hover:bg-transparent focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-4',
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
         ghost:

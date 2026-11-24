@@ -13,7 +13,7 @@ const en = {
   'home.stepNow': 'Now',
   'home.stepNext': 'Next',
   'home.stepLater': 'Later',
-  'home.meetTeam': 'Meet the team →',
+  'home.meetTeam': 'Meet the team',
   'home.fictionalNotice': 'Lumen is a fictional independent game studio.',
   'home.credit': 'Designed and built by Francisco Valle',
   'home.fallbackNotice': 'Some content is shown in English because its translation is unavailable.',

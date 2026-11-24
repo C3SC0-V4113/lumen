@@ -5,15 +5,13 @@
 
 ## Context
 
-The public hero uses a beacon with conic masks, 3D transforms, SVG filters, and keyframe motion.
-These effects do not map cleanly to static Tailwind utilities. A shared visible-focus indicator also
+The public hero uses a beacon with 3D transforms and keyframe motion. Tailwind utilities express most of its styling, while the keyframes, star pattern, beam shape and mask, elliptical wave crest, and animation play state need named definitions. A shared visible-focus indicator also
 needs to apply consistently to generated UI primitives, and Sonner needs semantic toast tokens on its
 container. The project otherwise uses Tailwind utilities and semantic design tokens.
 
 ## Decision
 
-Keep the beacon's specialized keyframes in `src/styles/global.css`, use theme tokens where possible,
-and respect reduced motion. Define the shared focus-visible outline and Sonner's semantic toast
+Keep the beacon's keyframes, named utilities for its star pattern, beam silhouette and fade, elliptical wave crest and animation play state, and a root pause variant in `src/styles/global.css`. Use Tailwind utilities and theme tokens in markup, and respect reduced motion. Define the shared focus-visible outline and Sonner's semantic toast
 properties in that stylesheet because they must cross component boundaries. Do not add component
 style blocks or a second stylesheet.
 
