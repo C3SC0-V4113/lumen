@@ -20,8 +20,13 @@ function getServerSnapshot() {
   return false;
 }
 
+function getHydratedSnapshot() {
+  return true;
+}
+
 export function BeaconControl({ lang }: { lang: Locale }) {
   const paused = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const hydrated = useSyncExternalStore(subscribe, getHydratedSnapshot, getServerSnapshot);
   function toggle() {
     const next = !getSnapshot();
     document.documentElement.classList.toggle('beacon-paused', next);
@@ -36,9 +41,10 @@ export function BeaconControl({ lang }: { lang: Locale }) {
     <Button
       type="button"
       variant="beacon"
-      size="touch"
+      size="icon-touch"
       data-hero="control"
-      className="group absolute top-1/2 left-7/10 flex h-72 w-20 items-start justify-center max-tiny:top-1/2 max-tiny:left-5/6 max-tiny:w-14 hero:top-1/3 hero:left-5/8 hero:h-116 hero:w-32"
+      data-hydrated={hydrated ? 'true' : undefined}
+      className="group absolute top-1/2 left-7/10 flex h-22.5 w-12 translate-x-4 translate-y-25 items-start justify-center max-tiny:left-13/16 max-tiny:h-12 max-tiny:w-11 max-tiny:translate-x-1.5 max-tiny:translate-y-30 hero:top-1/3 hero:left-5/8 hero:h-45 hero:w-24 hero:translate-y-35.5"
       aria-pressed={paused}
       aria-label={t(lang, paused ? 'home.beaconResume' : 'home.beaconPause')}
       onClick={toggle}
@@ -47,7 +53,7 @@ export function BeaconControl({ lang }: { lang: Locale }) {
         viewBox="0 0 80 150"
         aria-hidden="true"
         data-hero="tower"
-        className="size-full overflow-visible"
+        className="size-full overflow-visible max-tiny:w-6"
       >
         <path d="M22 37h36l13 96H9l13-96Z" data-hero="tower-fill" className="fill-hero-tower" />
         <path d="M19 54h42l3 12H17l2-12Zm-5 36h52l2 12H12l2-12Z" className="fill-hero-red" />
@@ -63,11 +69,11 @@ export function BeaconControl({ lang }: { lang: Locale }) {
         <path d="M16 38h48M8 134h64" className="fill-none stroke-foreground stroke-3" />
       </svg>
       <span
-        className="absolute -inset-3 rounded-full border border-hero-orb/70 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+        className="absolute -inset-3 rounded-full border border-hero-orb/70 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none max-tiny:-inset-2"
         aria-hidden="true"
       ></span>
       <span
-        className="absolute top-1/2 left-full ml-3 w-max rounded-lg bg-background px-3 py-2 text-xs text-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+        className="absolute top-1/2 left-full ml-3 w-max rounded-lg bg-background px-3 py-2 text-xs text-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none max-hero:right-full max-hero:left-auto max-hero:mr-3 max-hero:ml-0"
         aria-hidden="true"
       >
         {paused ? t(lang, 'home.beaconResume') : t(lang, 'home.beaconPause')}

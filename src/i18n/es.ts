@@ -15,6 +15,7 @@ const es: Record<keyof typeof en, string> = {
   'home.stepNow': 'Ahora',
   'home.stepNext': 'Siguiente',
   'home.stepLater': 'Después',
+  'home.seeOpenRoles': 'Ver empleos',
   'home.meetTeam': 'Conoce al equipo',
   'home.fictionalNotice': 'Lumen es un estudio ficticio de videojuegos independientes.',
   'home.credit': 'Diseñado y creado por Francisco Valle',

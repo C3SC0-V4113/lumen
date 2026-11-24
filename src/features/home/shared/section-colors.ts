@@ -30,6 +30,18 @@ export const textColorClasses: Record<(typeof textColors)[number], string> = {
   glow_teal: 'text-info dark:text-info',
 };
 
+export const darkTextColorClasses: Record<(typeof textColors)[number], string> = {
+  auto: 'dark:text-foreground',
+  ink: 'dark:text-foreground',
+  slate: 'dark:text-muted-foreground',
+  toasted_amber: 'dark:text-primary',
+  sea_teal: 'dark:text-info',
+  cream: 'dark:text-foreground',
+  mist: 'dark:text-muted-foreground',
+  amber: 'dark:text-lamp',
+  glow_teal: 'dark:text-info',
+};
+
 export function sectionColorClasses(section: {
   bgLight: keyof typeof lightBackgroundClasses | null;
   fgLight: keyof typeof textColorClasses | null;
@@ -39,9 +51,7 @@ export function sectionColorClasses(section: {
   const lightBg = section.bgLight ? lightBackgroundClasses[section.bgLight] : 'bg-background';
   const darkBg = section.bgDark ? darkBackgroundClasses[section.bgDark] : 'dark:bg-background';
   const lightFg = section.fgLight ? textColorClasses[section.fgLight] : 'text-foreground';
-  const darkFg = section.fgDark
-    ? textColorClasses[section.fgDark].split(' ').at(-1)
-    : 'dark:text-foreground';
+  const darkFg = section.fgDark ? darkTextColorClasses[section.fgDark] : 'dark:text-foreground';
   // Tokens adapt to the active site palette; the catalog still selects the semantic role.
   return `${lightBg} ${lightFg} ${darkBg} ${darkFg}`;
 }

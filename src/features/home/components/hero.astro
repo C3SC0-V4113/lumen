@@ -25,12 +25,12 @@ const { section, lang, fallbackNotice = false, staleNotice = false } = Astro.pro
   ></div>
   <div
     data-hero="orb"
-    class="absolute top-128 left-3/4 aspect-square w-22 rounded-full bg-radial from-hero-orb from-40% via-hero-orb-glow via-60% to-transparent to-75% text-hero-stars animate-hero-pulse motion-reduce:animate-none max-tiny:left-full hero:top-38 hero:right-1/6 hero:left-auto"
+    class="absolute top-128 left-3/4 aspect-square w-22 rounded-full bg-radial from-hero-orb from-40% via-hero-orb-glow via-60% to-transparent to-75% text-hero-stars animate-hero-pulse beacon-paused:paused motion-reduce:animate-none max-tiny:left-full hero:top-38 hero:right-1/6 hero:left-auto"
     aria-hidden="true"
   >
     <svg
       data-hero="dots"
-      class="absolute -inset-1/6 size-4/3 animate-hero-pulse-reverse opacity-25 motion-reduce:animate-none"
+      class="absolute -inset-1/6 size-4/3 animate-hero-pulse-reverse beacon-paused:paused opacity-25 motion-reduce:animate-none"
       viewBox="0 0 400 400"
     >
       <defs>
@@ -48,7 +48,7 @@ const { section, lang, fallbackNotice = false, staleNotice = false } = Astro.pro
   >
     <div
       data-hero="beam"
-      class="beam-shape absolute top-1/5 left-3/5 z-2 h-1/2 w-4/5 origin-left animate-hero-rotate bg-linear-to-r from-hero-orb/60 to-transparent beam-mask transform-3d beacon-paused:paused motion-reduce:animate-none motion-reduce:rotate-y-25 motion-reduce:opacity-25 max-tiny:left-11/12 hero:top-7/30 hero:left-11/20 hero:w-4/5"
+      class="beam-shape absolute top-1/5 left-3/5 z-2 h-1/2 w-4/5 origin-left animate-hero-rotate bg-linear-to-r from-hero-orb/60 to-transparent beam-mask transform-3d beacon-paused:paused motion-reduce:animate-none motion-reduce:rotate-y-25 motion-reduce:opacity-25 max-tiny:left-7/8 hero:top-7/30 hero:left-11/20 hero:w-4/5"
     >
       <span class="absolute inset-0 rotate-y-35 bg-linear-to-r from-hero-orb/50 to-transparent"></span>
       <span class="absolute inset-0 -rotate-y-35 bg-linear-to-r from-hero-orb/50 to-transparent opacity-50"></span>
@@ -57,17 +57,17 @@ const { section, lang, fallbackNotice = false, staleNotice = false } = Astro.pro
   </div>
   <div
     data-hero="wave-a"
-    class="absolute top-184 -right-1/20 -left-1/20 z-4 h-30 animate-hero-swell wave-crest bg-hero-wave-one opacity-70 motion-reduce:animate-none hero:top-152"
+    class="absolute top-184 -right-1/20 -left-1/20 z-4 h-30 animate-hero-swell beacon-paused:paused wave-crest bg-hero-wave-one opacity-70 motion-reduce:animate-none hero:top-152"
     aria-hidden="true"
   ></div>
   <div
     data-hero="wave-b"
-    class="absolute top-196 -right-1/20 -left-1/20 z-4 h-30 animate-hero-swell-b wave-crest bg-hero-wave-two opacity-70 motion-reduce:animate-none hero:top-165"
+    class="absolute top-196 -right-1/20 -left-1/20 z-4 h-30 animate-hero-swell-b beacon-paused:paused wave-crest bg-hero-wave-two opacity-70 motion-reduce:animate-none hero:top-165"
     aria-hidden="true"
   ></div>
   <div
     data-hero="wave-c"
-    class="absolute top-208 -right-1/20 -left-1/20 z-4 h-30 animate-hero-swell-c wave-crest bg-hero-wave-three opacity-70 motion-reduce:animate-none hero:top-180"
+    class="absolute top-208 -right-1/20 -left-1/20 z-4 h-30 animate-hero-swell-c beacon-paused:paused wave-crest bg-hero-wave-three opacity-70 motion-reduce:animate-none hero:top-180"
     aria-hidden="true"
   ></div>
   <div class="relative z-10 mx-auto max-w-7xl">

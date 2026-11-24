@@ -48,10 +48,13 @@ test('renders the lighthouse in server HTML without JavaScript at both capture w
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
-    for (const width of [1440, 390]) {
+    for (const width of [1440, 390, 320]) {
       await page.setViewportSize({ width, height: 1000 });
       await page.goto(response.url());
       await expect(page.locator('[data-hero="tower"]')).toBeVisible();
+      const target = await page.locator('[data-hero="control"]').boundingBox();
+      expect(target?.width).toBeGreaterThanOrEqual(44);
+      expect(target?.height).toBeGreaterThanOrEqual(44);
     }
   } finally {
     await context.close();
@@ -178,12 +181,28 @@ test('hero copy keeps AA contrast and stays clear of the orb across themes and w
 test('pauses and resumes the beacon and persists the choice', async ({ page }) => {
   await page.goto('/');
   const button = page.getByRole('button', { name: 'Pause lighthouse beam' });
-  const beaconIsland = page.locator('astro-island').filter({ has: button });
-  await expect(beaconIsland).not.toHaveAttribute('ssr');
+  await expect(button).toHaveAttribute('data-hydrated', 'true');
   await expect(button).toHaveAttribute('aria-pressed', 'false');
   expect(await tabToTarget(page, button, 30)).toBe(true);
   await expect(button).toBeFocused();
   await page.keyboard.press('Enter');
+  await expect
+    .poll(() =>
+      page.locator('[data-hero="scene"]').evaluate((scene) =>
+        scene
+          .getAnimations({ subtree: true })
+          .filter((animation): animation is CSSAnimation => animation instanceof CSSAnimation)
+          .map((animation) => ({ name: animation.animationName, state: animation.playState }))
+      )
+    )
+    .toEqual([
+      { name: 'hero-pulse', state: 'paused' },
+      { name: 'hero-pulse', state: 'paused' },
+      { name: 'hero-rotate', state: 'paused' },
+      { name: 'hero-swell', state: 'paused' },
+      { name: 'hero-swell', state: 'paused' },
+      { name: 'hero-swell', state: 'paused' },
+    ]);
   await expect(page.getByRole('button', { name: 'Resume lighthouse beam' })).toHaveAttribute(
     'aria-pressed',
     'true'
@@ -217,8 +236,7 @@ test('beacon pause state remains interactive when localStorage is blocked', asyn
   });
   await page.goto('/');
   const button = page.getByRole('button', { name: 'Pause lighthouse beam' });
-  const beaconIsland = page.locator('astro-island').filter({ has: button });
-  await expect(beaconIsland).not.toHaveAttribute('ssr');
+  await expect(button).toHaveAttribute('data-hydrated', 'true');
   await button.click();
   await expect(page.getByRole('button', { name: 'Resume lighthouse beam' })).toHaveAttribute(
     'aria-pressed',

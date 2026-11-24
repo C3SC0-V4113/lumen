@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { darkBackgrounds, lightBackgrounds, textColors } from '../../src/db/enums';
 import {
   darkBackgroundClasses,
+  darkTextColorClasses,
   lightBackgroundClasses,
   textColorClasses,
 } from '../../src/features/home/shared/section-colors';
@@ -15,6 +16,9 @@ describe('home section color catalog', () => {
     for (const key of darkBackgrounds) expect(darkBackgroundClasses[key]).toMatch(/^dark:bg-/);
   });
   it('maps every text color enum to a static class', () => {
-    for (const key of textColors) expect(textColorClasses[key]).toMatch(/^text-/);
+    for (const key of textColors) {
+      expect(textColorClasses[key]).toMatch(/^text-/);
+      expect(darkTextColorClasses[key]).toMatch(/^dark:text-/);
+    }
   });
 });
