@@ -37,6 +37,27 @@ test('renders published home content in both locales and maps the locale switch 
   await expect(page).toHaveURL('/');
 });
 
+test('renders the lighthouse in server HTML without JavaScript at both capture widths', async ({
+  browser,
+  request,
+}) => {
+  const response = await request.get('/');
+  expect(response.ok()).toBe(true);
+  expect(await response.text()).toContain('data-hero="tower"');
+
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.goto(response.url());
+      await expect(page.locator('[data-hero="tower"]')).toBeVisible();
+    }
+  } finally {
+    await context.close();
+  }
+});
+
 test('hero copy keeps AA contrast and stays clear of the orb across themes and widths', async ({
   page,
 }) => {

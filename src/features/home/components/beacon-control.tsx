@@ -1,25 +1,39 @@
-import { useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { t, type Locale } from '@/i18n';
 
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function getSnapshot() {
+  return document.documentElement.classList.contains('beacon-paused');
+}
+
+function getServerSnapshot() {
+  return false;
+}
+
 export function BeaconControl({ lang }: { lang: Locale }) {
-  const [paused, setPaused] = useState(false);
+  const paused = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   function toggle() {
-    const next = !paused;
-    setPaused(next);
+    const next = !getSnapshot();
     document.documentElement.classList.toggle('beacon-paused', next);
     try {
       localStorage.setItem('lumen:beacon-paused', String(next));
     } catch {
-      // State remains usable when storage is unavailable.
+      // The root class keeps the control usable when storage is unavailable.
     }
+    listeners.forEach((listener) => listener());
   }
   return (
     <Button
-      ref={(node) => {
-        if (node) setPaused(document.documentElement.classList.contains('beacon-paused'));
-      }}
       type="button"
       variant="beacon"
       size="touch"
